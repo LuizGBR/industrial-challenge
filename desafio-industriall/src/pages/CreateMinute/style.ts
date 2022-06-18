@@ -1,6 +1,13 @@
 import styled from 'styled-components';
 
-import {Card as RBCard, Input as RBInput, CardHeader as RBCardBody, Label as RBLabel , FormGroup as RBFormGroup} from 'reactstrap'
+import {
+    Card as RBCard, 
+    Input as RBInput, 
+    CardHeader as RBCardBody, 
+    Label as RBLabel , 
+    FormGroup as RBFormGroup,
+    CardFooter as RBCardFooter,
+} from 'reactstrap'
 
 
 
@@ -61,8 +68,6 @@ export const Label = styled(RBLabel)`
 `
 
 export const Input = styled(RBInput)`
-    font-weight: 400;
-    font-size: 16px;
     line-height: 20px;
 
     height: 40px;
@@ -73,6 +78,7 @@ export const Input = styled(RBInput)`
     border: 1px solid #c4c5c9;
     margin-bottom: 18px;
     box-shadow: none !important;
+    margin-top: 8px;
 
     &:hover{
         border: 1px solid #4ec1f5; 
@@ -84,3 +90,36 @@ export const Input = styled(RBInput)`
     }
 
 `
+
+export const CardFooter = styled(RBCardFooter)`
+    background: #F5F5F5;
+    border-top: none;
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+
+    button{
+        font-weight: 700;
+        display: flex;
+        justify-content: center;
+        align-self: center;
+        align-items: center;
+
+        width: 125px;
+        height: 38px;
+        
+        border-radius: 5px;
+        border: 0;
+    }
+
+    .cancel{
+        background: #c0c1c6;
+        color: #5C5958;
+        }
+
+    .save{
+        background: #44c08a;
+        color: #E4E6F0;
+    }
+`
+
