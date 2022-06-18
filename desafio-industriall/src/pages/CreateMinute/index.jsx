@@ -1,7 +1,29 @@
-import {Form} from 'reactstrap';
+import { useEffect, useState } from 'react';
+import {Button, CardFooter, Form} from 'reactstrap';
+import api from '../../services/api';
+import { getToken } from '../../services/getToken';
 import {Card, Input, CardBody, Label, FormGroup} from './style'
 
 export function CreateMinute(){
+
+    const [meetingTypeOptions, setMeetingTypeOptions] = useState([]);
+
+    async function getSelectOptions(){
+        const myToken = await getToken();
+
+        const response = await api.get('/TiposReuniao', {
+            headers:{
+                Authorization: `Bearer ${myToken}`
+            }
+        })
+        setMeetingTypeOptions(response.data)
+
+    }
+    
+    useEffect(()=>{
+        getSelectOptions();
+    })
+
 
     return(
         <div id="create-minute-form">
@@ -36,11 +58,11 @@ export function CreateMinute(){
                         <FormGroup>
                             <Label for="exampleSelect">Select</Label>
                             <Input type="select" name="select" id="exampleSelect">
-                                <option>1</option>
-                                <option>2</option>
-                                <option>3</option>
-                                <option>4</option>
-                                <option>5</option>
+                                {meetingTypeOptions?.map((meetingType) => {
+                                    return(
+                                        <option key={meetingType.id}>{meetingType.nome}</option>
+                                    )
+                                })}
                             </Input>
                         </FormGroup>
                         Conteúdo da Reunião                        
@@ -48,8 +70,11 @@ export function CreateMinute(){
                             Selecione o tipo da reunião
                         </div>  
                     </Form>
-                
                 </CardBody>
+                <CardFooter>
+                    <Button>CANCELAR</Button>
+                    <Button>SALVAR ATA</Button>
+                </CardFooter>
             </Card>
         </div>
  

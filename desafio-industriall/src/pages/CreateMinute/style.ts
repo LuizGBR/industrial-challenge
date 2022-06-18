@@ -7,9 +7,8 @@ import {Card as RBCard, Input as RBInput, CardHeader as RBCardBody, Label as RBL
 
 export const Card = styled(RBCard)`
         min-width:800px;
-        height: 700px;
         padding: 24px;
-
+        margin-bottom:24px ;
         background: #F5F5F5;
         box-shadow: 0px 4px 15px 1px rgba(0, 0, 0, 0.1);
         border-radius: 5px;
