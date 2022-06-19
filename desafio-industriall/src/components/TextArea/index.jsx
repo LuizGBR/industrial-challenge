@@ -30,6 +30,7 @@ export default function Textarea({ name, label, ...rest }) {
         ref={textareaRef}
         id={fieldName}
         defaultValue={defaultValue}
+        style={error && {border: '0', outline: '1px solid #dc3545'}}
         {...rest}
       />
 

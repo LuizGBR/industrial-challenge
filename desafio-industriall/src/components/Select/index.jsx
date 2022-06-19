@@ -30,8 +30,8 @@ function Select({ name, label, children, ...rest }) {
       <MySelect
         id={fieldName}
         ref={selectRef}
-        defaultValue={
-          defaultValue}
+        defaultValue={defaultValue}
+        style={error && {border: '0', outline: '1px solid #dc3545'}}
         {...rest}
       >
         {children}

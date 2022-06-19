@@ -31,6 +31,7 @@ export default function Input({ name, label, ...rest }) {
         id={fieldName}
         ref={inputRef}
         defaultValue={defaultValue}
+        style={error && {border: '0', outline: '1px solid #dc3545'}}
         {...rest}
       />
 

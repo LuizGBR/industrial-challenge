@@ -15,16 +15,26 @@ export function CreateMinute(){
     const formRef = useRef();
 
     const [meetingTypeOptions, setMeetingTypeOptions] = useState([]);
+    const [localOptions, setLocalOptions] = useState([]);
 
     async function getSelectOptions(){
         const myToken = await getToken();
 
-        const response = await api.get('/TiposReuniao', {
+        const meetingTypesResponse = await api.get('/TiposReuniao', {
             headers:{
                 Authorization: `Bearer ${myToken}`
             }
         })
-        setMeetingTypeOptions(response.data)
+
+        
+        const locationsResponse = await api.get('/Locais', {
+            headers:{
+                Authorization: `Bearer ${myToken}`
+            }
+        })
+
+        setMeetingTypeOptions(meetingTypesResponse.data)
+        setLocalOptions(locationsResponse.data);
 
     }
 
@@ -34,7 +44,7 @@ export function CreateMinute(){
         
         return(
             <>
-                {type === "Tipo de Reunião" && (
+                {type === "Tipo da Reunião" && (
                     <div className="meeting-content">
                         Selecione o tipo da reunião
                     </div>
@@ -68,7 +78,21 @@ export function CreateMinute(){
                 
             </>
         )
-    },[])    
+    },[])
+    
+    function validateLocal(local){
+        if(local === 'Local'){
+            return false;
+        }
+        return true;
+    }
+
+    function validateMeetingType(meetingType){
+        if(meetingType === 'Tipo da Reunião'){
+            return false;
+        }
+        return true;
+    }
 
     async function handleSubmit(data){
 
@@ -83,13 +107,13 @@ export function CreateMinute(){
         }
 
         let schemaObject = {
-            title: Yup.string().required("Este campo é obrigatório"),
-            local: Yup.string().required("Este campo é obrigatório"),
-            startDate: Yup.string().required("Este campo é obrigatório"),
-            endDate: Yup.string().required("Este campo é obrigatório"),
-            startTime: Yup.string().required("Este campo é obrigatório"),
-            endTime: Yup.string().required("Este campo é obrigatório"),
-            meetingTypeSelect: Yup.string().required("Este campo é obrigatório")
+            title: Yup.string().required("Este campo é obrigatório."),
+            local: Yup.string().test("is-a-valid-local", "Escolha um local válido.", validateLocal),
+            startDate: Yup.string().required("Este campo é obrigatório."),
+            endDate: Yup.string().required("Este campo é obrigatório."),
+            startTime: Yup.string().required("Este campo é obrigatório."),
+            endTime: Yup.string().required("Este campo é obrigatório."),
+            meetingTypeSelect: Yup.string().test("is-a-valid-type", "Escolha um tipo válido.", validateMeetingType)
         }
 
         if(data.meetingTypeSelect === 'Resumida'){
@@ -142,6 +166,8 @@ export function CreateMinute(){
             const schema = Yup.object().shape(schemaObject)
 
             await schema.validate(formData, {abortEarly: false})
+
+            console.log(data);
         }catch (err) {
             if (err instanceof Yup.ValidationError) {
               const errorMessages = {};
@@ -170,11 +196,12 @@ export function CreateMinute(){
                     </div>
                     <div>
                         <Select type="select" name="local" label="Local *" placeholder="Local">
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5</option> 
+                            <option>Local</option>
+                            {localOptions?.map((local) => {
+                                return(
+                                    <option key={local.id}>{local.nome}</option>
+                                )
+                            })}
                         </Select>
                     </div>
                     <div className="date-time-inputs">
@@ -199,7 +226,7 @@ export function CreateMinute(){
                             name="meetingTypeSelect" 
                             label="Tipo da Reunião *"
                         >
-                            <option>Tipo de Reunião</option>
+                            <option>Tipo da Reunião</option>
                             {meetingTypeOptions?.map((meetingType) => {
                                 return(
                                     <option key={meetingType.id}>{meetingType.nome}</option>
