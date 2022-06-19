@@ -1,6 +1,6 @@
 import { useRef, useEffect} from 'react'
 import { useField } from '@unform/core'
-import { MyLabel, MyTextarea } from './style'
+import { MyLabel, MySpan, MyTextarea } from './style'
 
 export default function Textarea({ name, label, ...rest }) {
   const textareaRef = useRef(null)
@@ -33,7 +33,7 @@ export default function Textarea({ name, label, ...rest }) {
         {...rest}
       />
 
-      {error && <span>{error}</span>}
+      {error && <MySpan>{error}</MySpan>}
     </div>
   )
 }

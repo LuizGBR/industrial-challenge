@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react'
 import { useField } from '@unform/core'
-import { MyInput, MyLabel } from './style'
+import { MyInput, MyLabel, MySpan } from './style'
 
 export default function Input({ name, label, ...rest }) {
   const inputRef = useRef(null)
@@ -34,7 +34,7 @@ export default function Input({ name, label, ...rest }) {
         {...rest}
       />
 
-      {error && <span className="error">{error}</span>}
+      {error && <MySpan className="error">{error}</MySpan>}
 
       
     </>

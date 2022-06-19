@@ -3,6 +3,8 @@ import styled from 'styled-components';
 export const MyLabel = styled.label`
     font-size: 16px;
     font-weight: 400;
+    
+    margin-bottom: 8px;
 `
 
 export const MyTextarea = styled.textarea`
@@ -13,9 +15,7 @@ export const MyTextarea = styled.textarea`
     padding: 8px 16px;
     background-color:#FFF;
     border: 1px solid #c4c5c9;
-    margin-bottom: 18px;
     box-shadow: none !important;
-    margin-top: 8px;
 
     &:hover{
         border: 1px solid #4ec1f5; 
@@ -25,4 +25,10 @@ export const MyTextarea = styled.textarea`
         border: 0;       
         outline: 1px solid #4ec1f5; 
     }
+`
+export const MySpan = styled.span`
+    font-family: 'Calibri', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    color: #dc3545;
 `

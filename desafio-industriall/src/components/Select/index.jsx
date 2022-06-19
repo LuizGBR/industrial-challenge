@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { useField } from "@unform/core";
-import { MyLabel, MySelect } from "./style";
+import { MyLabel, MySelect, MySpan } from "./style";
 
 function Select({ name, label, children, ...rest }) {
   const selectRef = useRef(null)
@@ -37,7 +37,7 @@ function Select({ name, label, children, ...rest }) {
         {children}
       </MySelect>
 
-      {error && <span className="error">{error}</span>}
+      {error && <MySpan className="error">{error}</MySpan>}
     </div>
   )
 }
