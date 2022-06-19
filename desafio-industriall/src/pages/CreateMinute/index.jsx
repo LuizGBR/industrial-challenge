@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import {Form} from '@unform/web';
 import api from '../../services/api';
 import { getToken } from '../../services/getToken';
-import {Card, Input, CardBody, Label, FormGroup, CardFooter} from './style'
+import {Card, Form} from './style'
+import Input from '../../components/Input';
+import Select from '../../components/Select';
+import Textarea from '../../components/TextArea';
+
 
 export function CreateMinute(){
 
@@ -11,7 +14,6 @@ export function CreateMinute(){
     const formRef = useRef();
 
     const [meetingTypeOptions, setMeetingTypeOptions] = useState([]);
-    const [meetingType, setMeetingType] = useState('');
 
     async function getSelectOptions(){
         const myToken = await getToken();
@@ -24,76 +26,100 @@ export function CreateMinute(){
         setMeetingTypeOptions(response.data)
 
     }
-    
+
+    const renderMeetingType = useCallback(()=>{
+
+        const type = formRef.current?.getFieldValue('meeting-type-Select');
+
+        return(
+            <>
+                {type === "Tipo de Reunião" && (
+                    <div className="meeting-content">
+                        Selecione o tipo da reunião
+                    </div>
+                )}
+                {type === 'Resumida' && (
+                    <Textarea name="description" label="Descrição dos Occoridos"/>    
+                )}
+                {type === "Daily Scrum" && (
+                    <>
+                        <Textarea name="today-work" label="O que foi feito hoje?"/>
+                        <Textarea name="tomorrow-work" label="O que será feito amanhã?"/>
+                    </>
+                )}
+                {type === "Sprint Retrospective" && (
+                    <>
+                        <div className='date-time'>
+                            <Input type="date" name="sprint-end-date" label="Data de Fim da Sprint" />
+                        </div>
+                        <Textarea name="sprint-review" label="Avaliação do Sprint"/>
+                    </>
+                )}
+                {type === "Acompanhamento de OKRs (Objectives and Key Results)" && (
+                    <>
+                        <div className='date-time'>
+                            <Input type="date" name="quarter-start-date" label="Data de Início do Trimestre" />
+                        </div>
+                        <Input name="objective" label="Objetivo Principal do Trimestre  "/>
+                        <Textarea name="key-results" label="Resultados Obtidos Durante os Meses"/>
+                    </>
+                )}
+                
+            </>
+        )
+    },[])   
+        
+
+    function handleSubmit(data){
+        console.log(data);
+    }
+
     useEffect(()=>{
         getSelectOptions();
     })
 
-    function getType(){
-        console.log(formRef.current.getFieldValue());
-    }
-
     return(
         <div id="create-minute-form">
             <Card>
-                <Form ref={formRef} onSubmit={getType}>
-                    <CardBody>
-                        Identificação
+                <Form ref={formRef} onSubmit={handleSubmit}>
+                    <h2>Identificação</h2>
+                    <Input name="title" label="Título *" placeholder="Título"/>
+                    <Select type="select" name="local" label="Local *" placeholder="Local">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option> 
+                    </Select>
+                    <div className="date-time-inputs">
+                        <div>
+                            <Input type="date" name="start-date" label="Data de Início *" />
+                            <Input type="date" name="end-date" label="Data de Fim *" />
+                        </div>
+                        <div>           
+                            <Input type="time" name="start-time" label="Horário de Início *" />
+                            <Input type="time" name="end-time" label="Horário de Fim *" />
+                        </div>    
+                    </div>
+                    <Select
+                        type="select" 
+                        name="meeting-type-Select" 
+                        label="Tipo da Reunião *"
+                    >
+                        <option>Tipo de Reunião</option>
+                        {meetingTypeOptions?.map((meetingType) => {
+                            return(
+                                <option key={meetingType.id}>{meetingType.nome}</option>
+                            )
+                        })}
                         
-                            <FormGroup>
-                                <Label for="title">Título *</Label>
-                                <Input type="text" name="title" id="title" placeholder="Título" />
-                            </FormGroup>
-                            <FormGroup>
-                                <Label for="examplePassword">Local *</Label>
-                                <Input type="select" name="local" id="local" placeholder="Local">
-                                    <option>1</option>
-                                    <option>2</option>
-                                    <option>3</option>
-                                    <option>4</option>
-                                    <option>5</option> 
-                                </Input>
-                            </FormGroup>
-                            <div className="date-inputs">
-                                <FormGroup>
-                                    <Label for="start-date">Data de Início *</Label>
-                                    <Input type="date" name="start-date" id="start-date" placeholder="Data de Início" />
-                                    <Label for="start-time">Horário de Início *</Label>
-                                    <Input type="time" name="start-time" id="start-time" placeholder="Horário de Início" />
-                                </FormGroup>
-                                <FormGroup>
-                                    <Label for="end-date">Data e Horário de fim *</Label>
-                                    <Input type="date" name="end-date" id="end-date" placeholder="Data e Horário de fim" />
-                                    <Label for="end-time">Horário de fim *</Label>
-                                    <Input type="time" name="end-time" id="end-time" placeholder="Horário de fim" />
-                                </FormGroup>
-                            </div>
-                            <FormGroup>
-                                <Label for="meetingTypeSelect">Select</Label>
-                                <Input 
-                                    type="select" 
-                                    name="meetingTypeSelect" 
-                                    id="meetingTypeSelect"
-                                    value={meetingType}
-                                    onChange={(e)=> setMeetingType(e.target.value)}
-                                >
-                                    {meetingTypeOptions?.map((meetingType) => {
-                                        return(
-                                            <option key={meetingType.id}>{meetingType.nome}</option>
-                                        )
-                                    })}
-                                </Input>
-                            </FormGroup>
-                            Conteúdo da Reunião                        
-                            <div className="meeting-content">
-                                Selecione o tipo da reunião
-                            </div>  
-                    
-                    </CardBody>
-                    <CardFooter>
+                    </Select>
+                    <h2>Conteúdo da Reunião</h2>                        
+                    {renderMeetingType()}
+                    <div className='form-footer'>
                         <button type="button" className="cancel" onClick={()=>{navigate('/')}}>CANCELAR</button>
                         <button type="submit" className="save" >SALVAR ATA</button>
-                    </CardFooter>
+                    </div>
                 </Form>
             </Card>
         </div>
