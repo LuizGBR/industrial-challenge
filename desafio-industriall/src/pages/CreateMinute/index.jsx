@@ -7,6 +7,7 @@ import Input from '../../components/Input';
 import Select from '../../components/Select';
 import Textarea from '../../components/TextArea';
 import * as Yup from 'yup'
+import {format} from 'date-fns'
 
 
 export function CreateMinute(){
@@ -14,22 +15,26 @@ export function CreateMinute(){
     const navigate = useNavigate();
     const formRef = useRef();
 
+
+    const [token, setToken] = useState("")
     const [meetingTypeOptions, setMeetingTypeOptions] = useState([]);
     const [localOptions, setLocalOptions] = useState([]);
 
-    async function getSelectOptions(){
-        const myToken = await getToken();
+    const [selectedMeetingType, setSelectedMeetingType] = useState('')
 
+    async function getSelectOptions(){
+        const myToken = await getToken()
+        setToken(myToken);
+        
         const meetingTypesResponse = await api.get('/TiposReuniao', {
             headers:{
-                Authorization: `Bearer ${myToken}`
+                Authorization: myToken,
             }
         })
-
         
         const locationsResponse = await api.get('/Locais', {
             headers:{
-                Authorization: `Bearer ${myToken}`
+                Authorization: myToken,
             }
         })
 
@@ -37,28 +42,50 @@ export function CreateMinute(){
         setLocalOptions(locationsResponse.data);
 
     }
+    
+    function getMeetingTypeId(meetingType){
+        
+        if(meetingType === "Resumida"){
+            return 1;
+        }
+        
+        if(meetingType === "Daily Scrum"){
+            return 2;
+        }
+        
+        if(meetingType === "Sprint Retrospective"){
+            return 3;
+        }
+        
+        if(meetingType === "Acompanhamento de OKRs (Objectives and Key Results)"){
+            return 4;
+        }
+        
+        return 0;
+
+    }
 
     const renderMeetingType = useCallback(()=>{
+           
+         const typeId = getMeetingTypeId(selectedMeetingType);
 
-        const type = formRef.current?.getFieldValue('meetingTypeSelect');
-        
         return(
             <>
-                {type === "Tipo da Reunião" && (
+                {typeId === 0 && (
                     <div className="meeting-content">
                         Selecione o tipo da reunião
                     </div>
                 )}
-                {type === 'Resumida' && (
+                {typeId === 1 && (
                     <Textarea name="description" label="Descrição dos Occoridos *"/>    
                 )}
-                {type === "Daily Scrum" && (
+                {typeId === 2 && (
                     <>
                         <Textarea name="todayWork" label="O que foi feito hoje? *"/>
                         <Textarea name="tomorrowWork" label="O que será feito amanhã? *"/>
                     </>
                 )}
-                {type === "Sprint Retrospective" && (
+                {typeId === 3 && (
                     <>
                         <div className='date-time'>
                             <Input type="date" name="sprintEndDate" label="Data de Fim da Sprint *" />
@@ -66,7 +93,7 @@ export function CreateMinute(){
                         <Textarea name="sprintReview" label="Avaliação do Sprint"/>
                     </>
                 )}
-                {type === "Acompanhamento de OKRs (Objectives and Key Results)" && (
+                {typeId === 4 && (
                     <>
                         <div className='date-time'>
                             <Input type="date" name="quarterStartDate" label="Data de Início do Trimestre *" />
@@ -78,23 +105,9 @@ export function CreateMinute(){
                 
             </>
         )
-    },[])
+    },[selectedMeetingType])
     
-    function validateLocal(local){
-        if(local === 'Local'){
-            return false;
-        }
-        return true;
-    }
-
-    function validateMeetingType(meetingType){
-        if(meetingType === 'Tipo da Reunião'){
-            return false;
-        }
-        return true;
-    }
-
-    async function handleSubmit(data){
+    function getValuesForValidation(data){
 
         let formData = {
             title: data.title,
@@ -116,7 +129,9 @@ export function CreateMinute(){
             meetingTypeSelect: Yup.string().test("is-a-valid-type", "Escolha um tipo válido.", validateMeetingType)
         }
 
-        if(data.meetingTypeSelect === 'Resumida'){
+        const typeId = getMeetingTypeId(data.meetingTypeSelect);
+
+        if(typeId === 1){
             formData={
                 ...formData,
                 description: data.description,
@@ -125,7 +140,7 @@ export function CreateMinute(){
                 ...schemaObject,
                 description: Yup.string().required("Este campo é obrigatório"),  
             } 
-        }else if(data.meetingTypeSelect === 'Daily Scrum'){
+        }else if(typeId === 2){
             formData={
                 ...formData,
                 todayWork: data.todayWork,
@@ -136,7 +151,7 @@ export function CreateMinute(){
                 todayWork: Yup.string().required("Este campo é obrigatório"),
                 tomorrowWork: Yup.string().required("Este campo é obrigatório"),  
             } 
-        }else if(data.meetingTypeSelect === 'Sprint Retrospective'){
+        }else if(typeId === 3){
             formData={
                 ...formData,
                 sprintEndDate: data.sprintEndDate,
@@ -147,7 +162,7 @@ export function CreateMinute(){
                 sprintEndDate: Yup.string().required("Este campo é obrigatório"),
                 sprintReview: Yup.string().required("Este campo é obrigatório"),  
             } 
-        }else if(data.meetingTypeSelect === 'Acompanhamento de OKRs (Objectives and Key Results)'){
+        }else if(typeId === 4){
             formData={
                 ...formData,
                 quarterStartDate: data.quarterStartDate,
@@ -162,12 +177,107 @@ export function CreateMinute(){
             } 
         }
 
+        return {formData, schemaObject}
+    }
+
+    function parseData(data){
+
+        const {startDate, endDate, startTime, endTime, title, meetingTypeSelect} = data;
+
+        const startDateElements = startDate.split('-');
+        const startTimeElements = startTime.split(':');
+        
+        const parsedStartDate = format(new Date(
+            startDateElements[0], 
+            startDateElements[1] - 1,
+            startDateElements[2],
+            startTimeElements[0],
+            startTimeElements[1]
+        ),  "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+        const endDateElements = endDate.split('-');
+        const endTimeElements = endTime.split(':');
+        
+        const parsedEndDate = format(new Date(
+            endDateElements[0], 
+            endDateElements[1] - 1,
+            endDateElements[2],
+            endTimeElements[0],
+            endTimeElements[1]
+        ),  "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+        const typeId = getMeetingTypeId(meetingTypeSelect);
+        
+        let parsedData = {
+            "titulo": title,
+            "dataInicio": parsedStartDate,
+            "dataFim": parsedEndDate,
+            "tipoReuniaoId": typeId,
+            "localId": 0,
+        }
+
+
+        if(typeId === 1){
+            const extraData = [{campoId: 1, valor: data.description}]
+            parsedData = {...parsedData, "camposAtaReuniao": extraData}
+        }
+        
+        
+        if(typeId === 2){
+            const extraData = [{campoId: 2, valor: data.todayWork}, {campoId:3 , valor: data.tomorrowWork}]
+            parsedData = {...parsedData, "camposAtaReuniao": extraData}
+        }
+    
+        
+        if(typeId === 3){
+            const extraData = [{campoId: 4, valor: data.sprintEndDate}, {campoId:5 , valor: data.sprintReview}]
+            parsedData = {...parsedData, "camposAtaReuniao": extraData}
+        }
+        
+        if(typeId === 4){
+            const extraData = [{campId: 6, valor: data.quarterStartDate}, {campoId:7 , valor: data.objective}, {campoId:8 , valor: data.keyResults}]
+            parsedData = {...parsedData, "camposAtaReuniao": extraData}
+        }
+
+        return parsedData;
+    }
+
+    function validateLocal(local){
+        if(local === 'Local'){
+            return false;
+        }
+        return true;
+    }
+
+    function validateMeetingType(meetingType){
+        if(meetingType === 'Tipo da Reunião'){
+            return false;
+        }
+        return true;
+    }
+
+    async function handleSubmit(data){
+
+        const {formData, schemaObject} = getValuesForValidation(data);
+
         try{
             const schema = Yup.object().shape(schemaObject)
 
             await schema.validate(formData, {abortEarly: false})
 
-            console.log(data);
+            const parsedData = parseData(data);
+
+            console.log(parsedData);
+
+            await api.post('/Atas', {
+                headers:{
+                    Authorization: token,
+                    "Content-Type": "application/json"
+                },
+                data: parsedData
+            })
+
+            
         }catch (err) {
             if (err instanceof Yup.ValidationError) {
               const errorMessages = {};
@@ -184,7 +294,8 @@ export function CreateMinute(){
 
     useEffect(()=>{
         getSelectOptions();
-    })
+        setToken(getToken());
+    },[])
 
     return(
         <div id="create-minute-form">
@@ -197,6 +308,7 @@ export function CreateMinute(){
                     <div>
                         <Select type="select" name="local" label="Local *" placeholder="Local">
                             <option>Local</option>
+                            <option>Teste</option>
                             {localOptions?.map((local) => {
                                 return(
                                     <option key={local.id}>{local.nome}</option>
@@ -225,6 +337,7 @@ export function CreateMinute(){
                             type="select" 
                             name="meetingTypeSelect" 
                             label="Tipo da Reunião *"
+                            onChange={(e)=> setSelectedMeetingType(e.target.value)}
                         >
                             <option>Tipo da Reunião</option>
                             {meetingTypeOptions?.map((meetingType) => {

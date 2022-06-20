@@ -5,7 +5,8 @@ import { MyInput, MyLabel, MySpan } from './style'
 export default function Input({ name, label, ...rest }) {
   const inputRef = useRef(null)
 
-  const { fieldName, defaultValue, registerField, error } = useField(name)
+  const { fieldName, defaultValue, registerField, error} = useField(name)
+  
 
   useEffect(() => {
     registerField({
@@ -35,9 +36,7 @@ export default function Input({ name, label, ...rest }) {
         {...rest}
       />
 
-      {error && <MySpan className="error">{error}</MySpan>}
-
-      
+      {error && <MySpan className="error">{error}</MySpan>}    
     </>
   )
 }

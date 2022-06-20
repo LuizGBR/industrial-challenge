@@ -2,9 +2,6 @@ import styled from 'styled-components';
 
 import {
     Card as RBCard, 
-    Input as RBInput, 
-    Label as RBLabel , 
-    FormGroup as RBFormGroup,
 } from 'reactstrap'
 
 import { Form as UnForm } from '@unform/web'

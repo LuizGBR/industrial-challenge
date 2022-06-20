@@ -8,5 +8,5 @@ export async function getToken(){
       
     const {token} = response.data;
 
-    return token;
+    return `Bearer ${token}`;
 }
