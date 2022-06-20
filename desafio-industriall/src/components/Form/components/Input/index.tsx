@@ -1,12 +1,17 @@
 import { useRef, useEffect } from 'react'
 import { useField } from '@unform/core'
-import { MyInput, MyLabel, MySpan } from './style'
+import { MyInput} from './style'
 
-export default function Input({ name, label, ...rest }) {
+type InputProps = {
+  name: string;
+  label: string;
+}
+
+export default function Input({ name, label, ...rest } : InputProps) {
   const inputRef = useRef(null)
 
   const { fieldName, defaultValue, registerField, error} = useField(name)
-  
+  const styledError = error ? {border: '0', outline: '1px solid #dc3545'} : {}  
 
   useEffect(() => {
     registerField({
@@ -25,18 +30,19 @@ export default function Input({ name, label, ...rest }) {
   }, [fieldName, registerField])
 
   return (
-    <>
-      {label && <MyLabel htmlFor={fieldName}>{label}</MyLabel>}
+    <MyInput>
+      {label && <label htmlFor={fieldName}>{label}</label>}
 
-      <MyInput
+      <input
+        
         id={fieldName}
         ref={inputRef}
         defaultValue={defaultValue}
-        style={error && {border: '0', outline: '1px solid #dc3545'}}
+        style={styledError}
         {...rest}
       />
 
-      {error && <MySpan className="error">{error}</MySpan>}    
-    </>
+      {error && <span className="error">{error}</span>}    
+    </MyInput>
   )
 }

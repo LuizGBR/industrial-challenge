@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router';
 import api from '../../services/api';
 import { getToken } from '../../services/getToken';
 import {Card, Form} from './style'
-import Input from '../../components/Input';
-import Select from '../../components/Select';
-import Textarea from '../../components/TextArea';
+import Input from '../../components/Form/components/Input';
+import Select from '../../components/Form/components/Select';
+import Textarea from '../../components/Form/components/TextArea';
 import * as Yup from 'yup'
 import {format} from 'date-fns'
 

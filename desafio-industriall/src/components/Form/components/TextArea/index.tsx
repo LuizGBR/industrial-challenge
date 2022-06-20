@@ -1,10 +1,18 @@
-import { useRef, useEffect} from 'react'
+import { useRef, useEffect, TextareaHTMLAttributes} from 'react'
 import { useField } from '@unform/core'
-import { MyLabel, MySpan, MyTextarea } from './style'
+import { MyTextarea } from './style'
 
-export default function Textarea({ name, label, ...rest }) {
+interface Props {
+  name: string
+  label?: string
+}
+
+type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & Props
+
+export default function Textarea({ name, label, ...rest }: TextareaProps) {
   const textareaRef = useRef(null)
   const { fieldName, defaultValue = '', registerField, error } = useField(name)
+  const styledError =  error ? {border: '0', outline: '1px solid #dc3545'} : {}
 
   useEffect(() => {
     registerField({
@@ -23,19 +31,19 @@ export default function Textarea({ name, label, ...rest }) {
   }, [fieldName, registerField])
 
   return (
-    <div>
-      {label && <MyLabel htmlFor={fieldName}>{label}</MyLabel>}
+    <MyTextarea>
+      {label && <label htmlFor={fieldName}>{label}</label>}
 
-      <MyTextarea
+      <textarea
         ref={textareaRef}
         id={fieldName}
         defaultValue={defaultValue}
-        style={error && {border: '0', outline: '1px solid #dc3545'}}
+        style={styledError}
         {...rest}
       />
 
-      {error && <MySpan>{error}</MySpan>}
-    </div>
+      {error && <span>{error}</span>}
+    </MyTextarea>
   )
 }
 
