@@ -50,30 +50,42 @@ type ErrorsObject = {
     [key: string]: any 
 }
 
+type MinuteExclusiveProps = {
+    campoId: number,
+    valor: string | undefined,
+}
+
+type MinuteProps = {
+    titulo: string,
+    dataInicio: string,
+    dataFim: string,
+    tipoReuniaoId: number,
+    localId: number,
+    camposAtaReunião: MinuteExclusiveProps[]
+}
+
 export function MinuteForm(){
 
     const navigate = useNavigate();
     const formRef = useRef<FormHandles>(null);
 
-
-    const [token, setToken] = useState("")
     const [meetingTypeOptions, setMeetingTypeOptions] = useState<MeetingType[]>([]);
     const [localOptions, setLocalOptions] = useState<Local[]>([]);
 
     const [selectedMeetingType, setSelectedMeetingType] = useState<Number>(0)
 
     async function getSelectOptions(){
-        const myToken = await getToken();
+        const token = await getToken();
         
         const meetingTypesResponse = await api.get('/TiposReuniao', {
             headers:{
-                Authorization: myToken,
+                Authorization: token,
             }
         })
         
         const locationsResponse = await api.get('/Locais', {
             headers:{
-                Authorization: myToken,
+                Authorization: token,
             }
         })
 
@@ -213,34 +225,36 @@ export function MinuteForm(){
             Number(endTimeElements[1])
         ),  "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
-        let parsedData: any = {
+        let parsedData: MinuteProps = {
             titulo: title,
             dataInicio: parsedStartDate,
             dataFim: parsedEndDate,
             tipoReuniaoId: meetingTypeId,
             localId: localId,
+            camposAtaReunião: []
         }
 
-        if(meetingTypeId === 1){
+
+        if(meetingTypeId == 1){
             const extraData = [{campoId: 1, valor: data.description}]
-            parsedData = {...parsedData, camposAtaReuniao: extraData}
+            parsedData.camposAtaReunião = extraData;
         }
         
         
-        if(meetingTypeId === 2){
+        if(meetingTypeId == 2){
             const extraData = [{campoId: 2, valor: data.todayWork}, {campoId:3 , valor: data.tomorrowWork}]
-            parsedData = {...parsedData, camposAtaReuniao: extraData}
+            parsedData.camposAtaReunião = extraData;
         }
     
         
-        if(meetingTypeId === 3){
+        if(meetingTypeId == 3){
             const extraData = [{campoId: 4, valor: data.sprintEndDate}, {campoId:5 , valor: data.sprintReview}]
-            parsedData = {...parsedData, camposAtaReuniao: extraData}
+            parsedData.camposAtaReunião = extraData;
         }
         
-        if(meetingTypeId === 4){
-            const extraData = [{campId: 6, valor: data.quarterStartDate}, {campoId:7 , valor: data.objective}, {campoId:8 , valor: data.keyResults}]
-            parsedData = {...parsedData, camposAtaReuniao: extraData}
+        if(meetingTypeId == 4){
+            const extraData = [{campoId: 6, valor: data.quarterStartDate}, {campoId:7 , valor: data.objective}, {campoId:8 , valor: data.keyResults}]
+            parsedData.camposAtaReunião = extraData;
         }
 
         return parsedData;
@@ -248,6 +262,8 @@ export function MinuteForm(){
 
 
     async function handleSubmit(data: FormData){
+        const token = await getToken();
+        
         const schemaObject = getSchema(data.meetingTypeId);
         
         try{
@@ -256,8 +272,6 @@ export function MinuteForm(){
             await schema.validate(data, {abortEarly: false})
             const parsedData = parseData(data);
             
-            console.log(parsedData);
-
             await api.post('/Atas', parsedData, {
                 headers:{
                     Authorization: token,
