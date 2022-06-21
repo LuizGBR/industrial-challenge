@@ -9,6 +9,7 @@ import Textarea from './components/TextArea';
 import * as Yup from 'yup'
 import {format} from 'date-fns'
 import { FormHandles } from '@unform/core';
+import { createDateTime } from '../../utils/createDateTime';
 
 type FormData = {
     title: string,
@@ -19,14 +20,15 @@ type FormData = {
     endTime: string,
     meetingTypeId: number,
     
-    description?: string,
-    todayWork?: string,
-    tomorrowWork?: string,
-    sprintEndDate?: string,
-    sprintReview?: string,
-    quarterStartDate?: string,
-    objective?: string,
-    keyResults?: string,
+    description: string,
+    todayWork: string,
+    tomorrowWork: string,
+    sprintEndDate: string,
+    sprintEndTime: string,
+    sprintReview: string,
+    quarterStartDate: string,
+    objective: string,
+    keyResults: string,
 }
 
 type MeetingField = {
@@ -61,7 +63,7 @@ type MinuteProps = {
     dataFim: string,
     tipoReuniaoId: number,
     localId: number,
-    camposAtaReunião: MinuteExclusiveProps[]
+    camposAtaReuniao: MinuteExclusiveProps[]
 }
 
 export function MinuteForm(){
@@ -114,8 +116,13 @@ export function MinuteForm(){
                 )}
                 {selectedMeetingType === 3 && (
                     <>
-                        <div className='date-time'>
-                            <Input type="date" name="sprintEndDate" label="Data de Fim da Sprint *" />
+                        <div className='date-time-inputs'>
+                            <div>
+                                <Input type="date" name="sprintEndDate" label="Data de Fim da Sprint *" />
+                            </div>
+                            <div>
+                                <Input type="time" name="sprintEndTime" label="Horário de Fim da Sprint *" />
+                            </div>
                         </div>
                         <Textarea name="sprintReview" label="Avaliação do Sprint"/>
                     </>
@@ -190,6 +197,7 @@ export function MinuteForm(){
             todayWork: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType2Values(value, meetingType)),
             tomorrowWork: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType2Values(value, meetingType)),
             sprintEndDate: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType3Values(value, meetingType)),
+            sprintEndTime: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType3Values(value, meetingType)),
             sprintReview: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType3Values(value, meetingType)),
             quarterStartDate: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType4Values(value, meetingType)),
             objective: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType4Values(value, meetingType)),
@@ -203,58 +211,41 @@ export function MinuteForm(){
 
         const {startDate, endDate, startTime, endTime, title, localId, meetingTypeId} = data;
 
-        const startDateElements = startDate.split('-');
-        const startTimeElements = startTime.split(':');
-        
-        const parsedStartDate = format(new Date(
-            Number(startDateElements[0]), 
-            Number(startDateElements[1]) - 1,
-            Number(startDateElements[2]),
-            Number(startTimeElements[0]),
-            Number(startTimeElements[1])
-        ),  "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-
-        const endDateElements = endDate.split('-');
-        const endTimeElements = endTime.split(':');
-        
-        const parsedEndDate = format(new Date(
-            Number(endDateElements[0]), 
-            Number(endDateElements[1]) - 1,
-            Number(endDateElements[2]),
-            Number(endTimeElements[0]),
-            Number(endTimeElements[1])
-        ),  "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        const parsedStartDateTime = createDateTime(startDate, startTime);
+        const parsedEndDateTime = createDateTime(endDate, endTime);
+        console.log(parsedStartDateTime);
 
         let parsedData: MinuteProps = {
             titulo: title,
-            dataInicio: parsedStartDate,
-            dataFim: parsedEndDate,
+            dataInicio: parsedStartDateTime,
+            dataFim: parsedEndDateTime,
             tipoReuniaoId: meetingTypeId,
             localId: localId,
-            camposAtaReunião: []
+            camposAtaReuniao: []
         }
 
 
         if(meetingTypeId == 1){
             const extraData = [{campoId: 1, valor: data.description}]
-            parsedData.camposAtaReunião = extraData;
+            parsedData.camposAtaReuniao = extraData;
         }
         
         
         if(meetingTypeId == 2){
             const extraData = [{campoId: 2, valor: data.todayWork}, {campoId:3 , valor: data.tomorrowWork}]
-            parsedData.camposAtaReunião = extraData;
+            parsedData.camposAtaReuniao = extraData;
         }
     
         
         if(meetingTypeId == 3){
-            const extraData = [{campoId: 4, valor: data.sprintEndDate}, {campoId:5 , valor: data.sprintReview}]
-            parsedData.camposAtaReunião = extraData;
+            const parsedSprintEndDateTime = createDateTime(data.sprintEndDate, data.sprintEndTime)
+            const extraData = [{campoId: 4, valor: parsedSprintEndDateTime}, {campoId:5 , valor: data.sprintReview}]
+            parsedData.camposAtaReuniao = extraData;
         }
         
         if(meetingTypeId == 4){
             const extraData = [{campoId: 6, valor: data.quarterStartDate}, {campoId:7 , valor: data.objective}, {campoId:8 , valor: data.keyResults}]
-            parsedData.camposAtaReunião = extraData;
+            parsedData.camposAtaReuniao = extraData;
         }
 
         return parsedData;
