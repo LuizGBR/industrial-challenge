@@ -17,7 +17,7 @@ type FormData = {
     endDate: string,
     startTime: string,
     endTime: string,
-    meetingTypeId: Number,
+    meetingTypeId: number,
     
     description?: string,
     todayWork?: string,
@@ -121,76 +121,70 @@ export function MinuteForm(){
             </>
         )
     },[selectedMeetingType])
-    
-    function getValuesForValidation(data: FormData){
 
-        let formData: FormData = {
-            title: data.title,
-            localId: data.localId,
-            startDate: data.startDate,
-            endDate: data.endDate,
-            startTime: data.startTime,
-            endTime: data.endTime,
-            meetingTypeId: data.meetingTypeId
+    function checkMeetingType1Values(value: any, meetingType: number){
+        if(meetingType == 1){
+            if(value && value.trim() !== ''){
+                return true;
+            }
+            return false;
         }
 
-        let schemaObject: any = {
+        return true;
+    }
+
+    function checkMeetingType2Values(value: any, meetingType: number){
+        if(meetingType == 2){
+            if(value && value.trim() !== ''){
+                return true;
+            }
+            return false;
+        }
+        return true;
+    }
+    
+    function checkMeetingType3Values(value: any, meetingType: number){
+        if(meetingType == 3){
+            if(value && value.trim() !== ''){
+                return true;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    function checkMeetingType4Values(value: any, meetingType: number){
+        if(meetingType == 4){
+            if(value && value.trim() !== ''){
+                return true;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    function getSchema(meetingType: number){
+
+        const schemaObject: any = {
             title: Yup.string().required("Este campo é obrigatório."),
             localId: Yup.string().test("is-a-valid-local", "Escolha um local válido.", localId => Number(localId) > 0),
             startDate: Yup.string().required("Este campo é obrigatório."),
             endDate: Yup.string().required("Este campo é obrigatório."),
             startTime: Yup.string().required("Este campo é obrigatório."),
             endTime: Yup.string().required("Este campo é obrigatório."),
-            meetingTypeId: Yup.string().test("is-a-valid-type", "Escolha um tipo válido.", meetingType => Number(meetingType) > 0)
+            meetingTypeId: Yup.string().test("is-valid", "Escolha um tipo válido.", meetingType => Number(meetingType) > 0),
+            
+            description: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType1Values(value, meetingType)),
+            todayWork: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType2Values(value, meetingType)),
+            tomorrowWork: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType2Values(value, meetingType)),
+            sprintEndDate: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType3Values(value, meetingType)),
+            sprintReview: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType3Values(value, meetingType)),
+            quarterStartDate: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType4Values(value, meetingType)),
+            objective: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType4Values(value, meetingType)),
+            keyResults: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType4Values(value, meetingType)),   
         }
 
-        if(data.meetingTypeId === 1){
-            formData={
-                ...formData,
-                description: data.description,
-            }
-            schemaObject = {
-                ...schemaObject,
-                description: Yup.string().required("Este campo é obrigatório"),  
-            } 
-        }else if(data.meetingTypeId === 2){
-            formData={
-                ...formData,
-                todayWork: data.todayWork,
-                tomorrowWork: data.tomorrowWork
-            }
-            schemaObject = {
-                ...schemaObject,
-                todayWork: Yup.string().required("Este campo é obrigatório"),
-                tomorrowWork: Yup.string().required("Este campo é obrigatório"),  
-            } 
-        }else if(data.meetingTypeId === 3){
-            formData={
-                ...formData,
-                sprintEndDate: data.sprintEndDate,
-                sprintReview: data.sprintReview
-            }
-            schemaObject = {
-                ...schemaObject,
-                sprintEndDate: Yup.string().required("Este campo é obrigatório"),
-                sprintReview: Yup.string().required("Este campo é obrigatório"),  
-            } 
-        }else if(data.meetingTypeId === 4){
-            formData={
-                ...formData,
-                quarterStartDate: data.quarterStartDate,
-                objective: data.objective,
-                keyResults: data.keyResults
-            }
-            schemaObject = {
-                ...schemaObject,
-                quarterStartDate: Yup.string().required("Este campo é obrigatório"),
-                objective: Yup.string().required("Este campo é obrigatório"),
-                keyResults: Yup.string().required("Este campo é obrigatório")  
-            } 
-        }
-
-        return {formData, schemaObject}
+        return schemaObject
     }
 
     function parseData(data: FormData){
@@ -254,25 +248,22 @@ export function MinuteForm(){
 
 
     async function handleSubmit(data: FormData){
+        const schemaObject = getSchema(data.meetingTypeId);
         
-        console.log(data);
-
-        const {formData, schemaObject} = getValuesForValidation(data);
-
         try{
             const schema = Yup.object().shape(schemaObject)
 
-            await schema.validate(formData, {abortEarly: false})
-
+            await schema.validate(data, {abortEarly: false})
             const parsedData = parseData(data);
+            
+            console.log(parsedData);
 
-            // await api.post('/Atas', parsedData, {
-            //     headers:{
-            //         Authorization: token,
-            //         "Content-Type": "application/json"
-            //     }
-            // })
-
+            await api.post('/Atas', parsedData, {
+                headers:{
+                    Authorization: token,
+                    "Content-Type": "application/json"
+                }
+            })
             
         }catch (err) {
             if (err instanceof Yup.ValidationError) {
