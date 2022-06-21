@@ -1,5 +1,7 @@
-#main-page{
-    > header{
+import styled from 'styled-components';
+
+export const MyMainPage = styled.div`
+    header{
         padding: 18px;
         background: #fff;
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);        
@@ -73,5 +75,4 @@
             align-items: center;
         }
     }
-}
-
+`

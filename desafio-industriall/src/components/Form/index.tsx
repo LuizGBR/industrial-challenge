@@ -3,28 +3,67 @@ import { useNavigate } from 'react-router';
 import api from '../../services/api';
 import { getToken } from '../../services/getToken';
 import {Card, Form} from './style'
-import Input from '../../components/Form/components/Input';
-import Select from '../../components/Form/components/Select';
-import Textarea from '../../components/Form/components/TextArea';
+import Input from './components/Input';
+import Select from './components/Select';
+import Textarea from './components/TextArea';
 import * as Yup from 'yup'
 import {format} from 'date-fns'
+import { FormHandles } from '@unform/core';
 
+type FormData = {
+    title: string,
+    localId: number,
+    startDate: string,
+    endDate: string,
+    startTime: string,
+    endTime: string,
+    meetingTypeId: Number,
+    
+    description?: string,
+    todayWork?: string,
+    tomorrowWork?: string,
+    sprintEndDate?: string,
+    sprintReview?: string,
+    quarterStartDate?: string,
+    objective?: string,
+    keyResults?: string,
+}
 
-export function CreateMinute(){
+type MeetingField = {
+    id: number,
+    tipo: string,
+    nome: string,
+}
+
+type MeetingType = {
+        id: number,
+        nome: string,
+        campos: MeetingField[]
+}
+
+type Local = {
+    id: number,
+    nome: string,
+}
+
+type ErrorsObject = {
+    [key: string]: any 
+}
+
+export function MinuteForm(){
 
     const navigate = useNavigate();
-    const formRef = useRef();
+    const formRef = useRef<FormHandles>(null);
 
 
     const [token, setToken] = useState("")
-    const [meetingTypeOptions, setMeetingTypeOptions] = useState([]);
-    const [localOptions, setLocalOptions] = useState([]);
+    const [meetingTypeOptions, setMeetingTypeOptions] = useState<MeetingType[]>([]);
+    const [localOptions, setLocalOptions] = useState<Local[]>([]);
 
-    const [selectedMeetingType, setSelectedMeetingType] = useState('')
+    const [selectedMeetingType, setSelectedMeetingType] = useState<Number>(0)
 
     async function getSelectOptions(){
-        const myToken = await getToken()
-        setToken(myToken);
+        const myToken = await getToken();
         
         const meetingTypesResponse = await api.get('/TiposReuniao', {
             headers:{
@@ -42,50 +81,26 @@ export function CreateMinute(){
         setLocalOptions(locationsResponse.data);
 
     }
-    
-    function getMeetingTypeId(meetingType){
-        
-        if(meetingType === "Resumida"){
-            return 1;
-        }
-        
-        if(meetingType === "Daily Scrum"){
-            return 2;
-        }
-        
-        if(meetingType === "Sprint Retrospective"){
-            return 3;
-        }
-        
-        if(meetingType === "Acompanhamento de OKRs (Objectives and Key Results)"){
-            return 4;
-        }
-        
-        return 0;
-
-    }
 
     const renderMeetingType = useCallback(()=>{
-           
-         const typeId = getMeetingTypeId(selectedMeetingType);
-
+        
         return(
             <>
-                {typeId === 0 && (
+                {selectedMeetingType === 0 && (
                     <div className="meeting-content">
                         Selecione o tipo da reunião
                     </div>
                 )}
-                {typeId === 1 && (
+                {selectedMeetingType === 1 && (
                     <Textarea name="description" label="Descrição dos Occoridos *"/>    
                 )}
-                {typeId === 2 && (
+                {selectedMeetingType === 2 && (
                     <>
                         <Textarea name="todayWork" label="O que foi feito hoje? *"/>
                         <Textarea name="tomorrowWork" label="O que será feito amanhã? *"/>
                     </>
                 )}
-                {typeId === 3 && (
+                {selectedMeetingType === 3 && (
                     <>
                         <div className='date-time'>
                             <Input type="date" name="sprintEndDate" label="Data de Fim da Sprint *" />
@@ -93,7 +108,7 @@ export function CreateMinute(){
                         <Textarea name="sprintReview" label="Avaliação do Sprint"/>
                     </>
                 )}
-                {typeId === 4 && (
+                {selectedMeetingType === 4 && (
                     <>
                         <div className='date-time'>
                             <Input type="date" name="quarterStartDate" label="Data de Início do Trimestre *" />
@@ -107,31 +122,29 @@ export function CreateMinute(){
         )
     },[selectedMeetingType])
     
-    function getValuesForValidation(data){
+    function getValuesForValidation(data: FormData){
 
-        let formData = {
+        let formData: FormData = {
             title: data.title,
-            local: data.local,
+            localId: data.localId,
             startDate: data.startDate,
             endDate: data.endDate,
             startTime: data.startTime,
             endTime: data.endTime,
-            meetingTypeSelect: data.meetingTypeSelect
+            meetingTypeId: data.meetingTypeId
         }
 
-        let schemaObject = {
+        let schemaObject: any = {
             title: Yup.string().required("Este campo é obrigatório."),
-            local: Yup.string().test("is-a-valid-local", "Escolha um local válido.", validateLocal),
+            localId: Yup.string().test("is-a-valid-local", "Escolha um local válido.", localId => Number(localId) > 0),
             startDate: Yup.string().required("Este campo é obrigatório."),
             endDate: Yup.string().required("Este campo é obrigatório."),
             startTime: Yup.string().required("Este campo é obrigatório."),
             endTime: Yup.string().required("Este campo é obrigatório."),
-            meetingTypeSelect: Yup.string().test("is-a-valid-type", "Escolha um tipo válido.", validateMeetingType)
+            meetingTypeId: Yup.string().test("is-a-valid-type", "Escolha um tipo válido.", meetingType => Number(meetingType) > 0)
         }
 
-        const typeId = getMeetingTypeId(data.meetingTypeSelect);
-
-        if(typeId === 1){
+        if(data.meetingTypeId === 1){
             formData={
                 ...formData,
                 description: data.description,
@@ -140,7 +153,7 @@ export function CreateMinute(){
                 ...schemaObject,
                 description: Yup.string().required("Este campo é obrigatório"),  
             } 
-        }else if(typeId === 2){
+        }else if(data.meetingTypeId === 2){
             formData={
                 ...formData,
                 todayWork: data.todayWork,
@@ -151,7 +164,7 @@ export function CreateMinute(){
                 todayWork: Yup.string().required("Este campo é obrigatório"),
                 tomorrowWork: Yup.string().required("Este campo é obrigatório"),  
             } 
-        }else if(typeId === 3){
+        }else if(data.meetingTypeId === 3){
             formData={
                 ...formData,
                 sprintEndDate: data.sprintEndDate,
@@ -162,7 +175,7 @@ export function CreateMinute(){
                 sprintEndDate: Yup.string().required("Este campo é obrigatório"),
                 sprintReview: Yup.string().required("Este campo é obrigatório"),  
             } 
-        }else if(typeId === 4){
+        }else if(data.meetingTypeId === 4){
             formData={
                 ...formData,
                 quarterStartDate: data.quarterStartDate,
@@ -180,83 +193,69 @@ export function CreateMinute(){
         return {formData, schemaObject}
     }
 
-    function parseData(data){
+    function parseData(data: FormData){
 
-        const {startDate, endDate, startTime, endTime, title, meetingTypeSelect} = data;
+        const {startDate, endDate, startTime, endTime, title, localId, meetingTypeId} = data;
 
         const startDateElements = startDate.split('-');
         const startTimeElements = startTime.split(':');
         
         const parsedStartDate = format(new Date(
-            startDateElements[0], 
-            startDateElements[1] - 1,
-            startDateElements[2],
-            startTimeElements[0],
-            startTimeElements[1]
+            Number(startDateElements[0]), 
+            Number(startDateElements[1]) - 1,
+            Number(startDateElements[2]),
+            Number(startTimeElements[0]),
+            Number(startTimeElements[1])
         ),  "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
         const endDateElements = endDate.split('-');
         const endTimeElements = endTime.split(':');
         
         const parsedEndDate = format(new Date(
-            endDateElements[0], 
-            endDateElements[1] - 1,
-            endDateElements[2],
-            endTimeElements[0],
-            endTimeElements[1]
+            Number(endDateElements[0]), 
+            Number(endDateElements[1]) - 1,
+            Number(endDateElements[2]),
+            Number(endTimeElements[0]),
+            Number(endTimeElements[1])
         ),  "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
-        const typeId = getMeetingTypeId(meetingTypeSelect);
-        
-        let parsedData = {
-            "titulo": title,
-            "dataInicio": parsedStartDate,
-            "dataFim": parsedEndDate,
-            "tipoReuniaoId": typeId,
-            "localId": 0,
+        let parsedData: any = {
+            titulo: title,
+            dataInicio: parsedStartDate,
+            dataFim: parsedEndDate,
+            tipoReuniaoId: meetingTypeId,
+            localId: localId,
         }
 
-
-        if(typeId === 1){
+        if(meetingTypeId === 1){
             const extraData = [{campoId: 1, valor: data.description}]
-            parsedData = {...parsedData, "camposAtaReuniao": extraData}
+            parsedData = {...parsedData, camposAtaReuniao: extraData}
         }
         
         
-        if(typeId === 2){
+        if(meetingTypeId === 2){
             const extraData = [{campoId: 2, valor: data.todayWork}, {campoId:3 , valor: data.tomorrowWork}]
-            parsedData = {...parsedData, "camposAtaReuniao": extraData}
+            parsedData = {...parsedData, camposAtaReuniao: extraData}
         }
     
         
-        if(typeId === 3){
+        if(meetingTypeId === 3){
             const extraData = [{campoId: 4, valor: data.sprintEndDate}, {campoId:5 , valor: data.sprintReview}]
-            parsedData = {...parsedData, "camposAtaReuniao": extraData}
+            parsedData = {...parsedData, camposAtaReuniao: extraData}
         }
         
-        if(typeId === 4){
+        if(meetingTypeId === 4){
             const extraData = [{campId: 6, valor: data.quarterStartDate}, {campoId:7 , valor: data.objective}, {campoId:8 , valor: data.keyResults}]
-            parsedData = {...parsedData, "camposAtaReuniao": extraData}
+            parsedData = {...parsedData, camposAtaReuniao: extraData}
         }
 
         return parsedData;
     }
 
-    function validateLocal(local){
-        if(local === 'Local'){
-            return false;
-        }
-        return true;
-    }
 
-    function validateMeetingType(meetingType){
-        if(meetingType === 'Tipo da Reunião'){
-            return false;
-        }
-        return true;
-    }
-
-    async function handleSubmit(data){
+    async function handleSubmit(data: FormData){
+        
+        console.log(data);
 
         const {formData, schemaObject} = getValuesForValidation(data);
 
@@ -267,26 +266,25 @@ export function CreateMinute(){
 
             const parsedData = parseData(data);
 
-            console.log(parsedData);
-
-            await api.post('/Atas', {
-                headers:{
-                    Authorization: token,
-                    "Content-Type": "application/json"
-                },
-                data: parsedData
-            })
+            // await api.post('/Atas', parsedData, {
+            //     headers:{
+            //         Authorization: token,
+            //         "Content-Type": "application/json"
+            //     }
+            // })
 
             
         }catch (err) {
             if (err instanceof Yup.ValidationError) {
-              const errorMessages = {};
+              const errorMessages: ErrorsObject = {};
 
               err.inner.forEach(error => {
-                errorMessages[error.path] = error.message
+                    if(error.path){
+                        errorMessages[error?.path] = error.message
+                    }   
               })
-
-              formRef.current.setErrors(errorMessages);
+            
+              formRef.current?.setErrors(errorMessages);
             }
         }
 
@@ -294,24 +292,23 @@ export function CreateMinute(){
 
     useEffect(()=>{
         getSelectOptions();
-        setToken(getToken());
     },[])
 
     return(
         <div id="create-minute-form">
             <Card>
                 <Form ref={formRef} onSubmit={handleSubmit}>
+                    <>
                     <h2>Identificação</h2>
                     <div>
                         <Input name="title" label="Título *" placeholder="Título"/>
                     </div>
                     <div>
-                        <Select type="select" name="local" label="Local *" placeholder="Local">
-                            <option>Local</option>
-                            <option>Teste</option>
+                        <Select name="localId" label="Local *" placeholder="Local">
+                            <option value={0}>Local</option>
                             {localOptions?.map((local) => {
                                 return(
-                                    <option key={local.id}>{local.nome}</option>
+                                    <option key={local.id} value={local.id}>{local.nome}</option>
                                 )
                             })}
                         </Select>
@@ -333,16 +330,15 @@ export function CreateMinute(){
                         </div>
                     </div>
                     <div>
-                        <Select
-                            type="select" 
-                            name="meetingTypeSelect" 
+                        <Select 
+                            name="meetingTypeId" 
                             label="Tipo da Reunião *"
-                            onChange={(e)=> setSelectedMeetingType(e.target.value)}
+                            onChange={(e)=> setSelectedMeetingType(Number(e.target.value))}
                         >
-                            <option>Tipo da Reunião</option>
+                            <option value={0}>Tipo da Reunião</option>
                             {meetingTypeOptions?.map((meetingType) => {
                                 return(
-                                    <option key={meetingType.id}>{meetingType.nome}</option>
+                                    <option key={meetingType.id} value={meetingType.id}>{meetingType.nome}</option>
                                 )
                             })}
                         </Select>
@@ -353,6 +349,7 @@ export function CreateMinute(){
                         <button type="button" className="cancel" onClick={()=>{navigate('/')}}>CANCELAR</button>
                         <button type="submit" className="save" >SALVAR ATA</button>
                     </div>
+                    </>
                 </Form>
             </Card>
         </div>

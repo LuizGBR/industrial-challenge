@@ -1,7 +1,7 @@
 import { MainPage } from "./pages/MainPage";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { CreateMinute } from "./pages/CreateMinute";
+import { MinuteForm } from "./components/Form";
 
 
 function App() {
@@ -17,7 +17,7 @@ function App() {
         <Route path="/minute"
           element={
           <MainPage >
-            <CreateMinute />
+            <MinuteForm />
           </MainPage>
         } />
       </Routes>

@@ -1,8 +1,8 @@
-import './style.scss'
 import logoImg from '../../assets/images/logo-escura.svg'
 import AddIcon from '@mui/icons-material/Add';
 import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MyMainPage } from './style';
 
 type MainPageProps = {
     children?: ReactNode;
@@ -16,7 +16,7 @@ export function MainPage({children, isHomePage} : MainPageProps ){
     const subtitle = isHomePage ? 'Estas são as atas das últimas reuniões.' : 'Os campos obrigatórios estão marcados com um asterisco (*)'
 
     return(
-        <div id="main-page">
+        <MyMainPage>
             <header>
                 <div className="content">
                     <img src={logoImg} alt="Logo"></img>
@@ -42,6 +42,6 @@ export function MainPage({children, isHomePage} : MainPageProps ){
                     {children}
                 </div>    
            </main>
-        </div>
+        </MyMainPage>
     )
 }

@@ -1,13 +1,15 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, InputHTMLAttributes } from 'react'
 import { useField } from '@unform/core'
 import { MyInput} from './style'
 
-type InputProps = {
+type InputProps ={
   name: string;
   label: string;
 }
 
-export default function Input({ name, label, ...rest } : InputProps) {
+type Props = InputHTMLAttributes<HTMLInputElement> & InputProps
+
+export default function Input({ name, label,  ...rest } : Props) {
   const inputRef = useRef(null)
 
   const { fieldName, defaultValue, registerField, error} = useField(name)
@@ -34,7 +36,6 @@ export default function Input({ name, label, ...rest } : InputProps) {
       {label && <label htmlFor={fieldName}>{label}</label>}
 
       <input
-        
         id={fieldName}
         ref={inputRef}
         defaultValue={defaultValue}
