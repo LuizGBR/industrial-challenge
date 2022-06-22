@@ -40,7 +40,6 @@ type MeetingField = {
 type MeetingType = {
         id: number,
         nome: string,
-        campos: MeetingField[]
 }
 
 type Local = {
@@ -92,12 +91,21 @@ export function MinuteForm(){
             }
         })
 
-        setMeetingTypeOptions(meetingTypesResponse.data)
-        setLocalOptions(locationsResponse.data);
+        const meetingTypes: MeetingType[] = meetingTypesResponse.data;
+        const locations: Local[] = locationsResponse.data;
+
+        const meetingTypePlaceholder: MeetingType = {id: 0, nome: "Tipo da Reunião"}
+        const localPlaceholder: Local = {id:0, nome: "Local"}
+
+        meetingTypes.unshift(meetingTypePlaceholder);
+        locations.unshift(localPlaceholder);
+
+        setMeetingTypeOptions(meetingTypes)
+        setLocalOptions(locations);
 
     }
 
-    async function getInitialData() {
+    const getInitialData = useCallback(async () =>{
         if(params.id){
 
             const token = await getToken();
@@ -106,9 +114,7 @@ export function MinuteForm(){
                     Authorization: token
                 }
             })
-
-            console.log(response.data)
-            
+       
             const initialData: MinuteProps = response.data;
 
             const {dataInicio, dataFim} = initialData
@@ -121,14 +127,15 @@ export function MinuteForm(){
 
             formRef.current?.setData({
                 title: initialData.titulo,
+                localId: String(initialData.localId),
                 startDate: startDate,
                 endDate: endDate,
                 startTime: startTime,
                 endTime: endTime,
-                description: initialData.camposAtaReuniao[0].valor
+                meetingTypeId: String(initialData.tipoReuniaoId)
             })
-        }
-    }
+        }   
+    },[params.id]) 
 
     const renderMeetingType = useCallback(()=>{
         
@@ -280,6 +287,7 @@ export function MinuteForm(){
 
 
     async function handleSubmit(data: FormData){
+
         const token = await getToken();
         
         const schemaObject = getSchema(data.meetingTypeId);
@@ -326,8 +334,11 @@ export function MinuteForm(){
 
     useEffect(()=>{
         getSelectOptions();
-        getInitialData();
-    }, [])
+        if(meetingTypeOptions.length !== 0 && localOptions.length !== 0){
+            getInitialData();
+        }
+        
+    }, [getInitialData, localOptions.length, meetingTypeOptions.length])
 
     return(
         <div id="create-minute-form">
@@ -341,7 +352,6 @@ export function MinuteForm(){
                     </div>
                     <div>
                         <Select name="localId" label="Local *" placeholder="Local">
-                            <option value={0}>Local</option>
                             {localOptions?.map((local) => {
                                 return(
                                     <option key={local.id} value={local.id}>{local.nome}</option>
@@ -371,7 +381,6 @@ export function MinuteForm(){
                             label="Tipo da Reunião *"
                             onChange={(e)=> setSelectedMeetingType(Number(e.target.value))}
                         >
-                            <option value={0}>Tipo da Reunião</option>
                             {meetingTypeOptions?.map((meetingType) => {
                                 return(
                                     <option key={meetingType.id} value={meetingType.id}>{meetingType.nome}</option>
