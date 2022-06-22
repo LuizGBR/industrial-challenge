@@ -105,7 +105,7 @@ export function MinuteForm(){
 
     }
 
-    const getInitialData = useCallback(async () =>{
+    const setInitialData = useCallback(async () =>{
         if(params.id){
 
             const token = await getToken();
@@ -134,6 +134,8 @@ export function MinuteForm(){
                 endTime: endTime,
                 meetingTypeId: String(initialData.tipoReuniaoId)
             })
+
+            setSelectedMeetingType(initialData.tipoReuniaoId);
         }   
     },[params.id]) 
 
@@ -335,10 +337,10 @@ export function MinuteForm(){
     useEffect(()=>{
         getSelectOptions();
         if(meetingTypeOptions.length !== 0 && localOptions.length !== 0){
-            getInitialData();
+            setInitialData();
         }
         
-    }, [getInitialData, localOptions.length, meetingTypeOptions.length])
+    }, [setInitialData, localOptions.length, meetingTypeOptions.length])
 
     return(
         <div id="create-minute-form">
@@ -375,11 +377,11 @@ export function MinuteForm(){
                             <Input type="time" name="endTime" label="Horário de Fim *" />    
                         </div>
                     </div>
-                    <div>
+                    <div >
                         <Select 
                             name="meetingTypeId" 
                             label="Tipo da Reunião *"
-                            onChange={(e)=> setSelectedMeetingType(Number(e.target.value))}
+                            onChange={()=> setSelectedMeetingType(Number(formRef.current?.getFieldValue('meetingTypeId')))}
                         >
                             {meetingTypeOptions?.map((meetingType) => {
                                 return(
