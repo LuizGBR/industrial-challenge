@@ -33,7 +33,6 @@ export const MyMainPage = styled.div`
                 padding: 24px;
 
                 h1{
-                    font-family: 'Calibri', sans-serif;
                     font-weight: 700;
                     font-size: 24px;
                     color: #1E2251;
@@ -41,7 +40,6 @@ export const MyMainPage = styled.div`
                 }
         
                 p{
-                    font-family: 'Calibri', sans-serif;
                     font-weight: 400;
                     font-size: 20px;
                     color: #5C5958;

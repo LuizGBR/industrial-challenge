@@ -24,7 +24,6 @@ type FormData = {
     todayWork: string,
     tomorrowWork: string,
     sprintEndDate: string,
-    sprintEndTime: string,
     sprintReview: string,
     quarterStartDate: string,
     objective: string,
@@ -116,13 +115,8 @@ export function MinuteForm(){
                 )}
                 {selectedMeetingType === 3 && (
                     <>
-                        <div className='date-time-inputs'>
-                            <div>
-                                <Input type="date" name="sprintEndDate" label="Data de Fim da Sprint *" />
-                            </div>
-                            <div>
-                                <Input type="time" name="sprintEndTime" label="Horário de Fim da Sprint *" />
-                            </div>
+                        <div className='date-time'>
+                           <Input type="date" name="sprintEndDate" label="Data de Fim da Sprint *" />
                         </div>
                         <Textarea name="sprintReview" label="Avaliação do Sprint"/>
                     </>
@@ -197,7 +191,6 @@ export function MinuteForm(){
             todayWork: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType2Values(value, meetingType)),
             tomorrowWork: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType2Values(value, meetingType)),
             sprintEndDate: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType3Values(value, meetingType)),
-            sprintEndTime: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType3Values(value, meetingType)),
             sprintReview: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType3Values(value, meetingType)),
             quarterStartDate: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType4Values(value, meetingType)),
             objective: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType4Values(value, meetingType)),
@@ -213,7 +206,6 @@ export function MinuteForm(){
 
         const parsedStartDateTime = createDateTime(startDate, startTime);
         const parsedEndDateTime = createDateTime(endDate, endTime);
-        console.log(parsedStartDateTime);
 
         let parsedData: MinuteProps = {
             titulo: title,
@@ -238,13 +230,13 @@ export function MinuteForm(){
     
         
         if(meetingTypeId == 3){
-            const parsedSprintEndDateTime = createDateTime(data.sprintEndDate, data.sprintEndTime)
-            const extraData = [{campoId: 4, valor: parsedSprintEndDateTime}, {campoId:5 , valor: data.sprintReview}]
+            const parsedSprintEndDate = format(new Date(data.sprintEndDate), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            const extraData = [{campoId: 4, valor: parsedSprintEndDate}, {campoId:6 , valor: data.sprintReview}]
             parsedData.camposAtaReuniao = extraData;
         }
         
         if(meetingTypeId == 4){
-            const extraData = [{campoId: 6, valor: data.quarterStartDate}, {campoId:7 , valor: data.objective}, {campoId:8 , valor: data.keyResults}]
+            const extraData = [{campoId: 7, valor: data.quarterStartDate}, {campoId:8 , valor: data.objective}, {campoId:9 , valor: data.keyResults}]
             parsedData.camposAtaReuniao = extraData;
         }
 
@@ -258,9 +250,9 @@ export function MinuteForm(){
         const schemaObject = getSchema(data.meetingTypeId);
         
         try{
-            const schema = Yup.object().shape(schemaObject)
+            const schema = Yup.object().shape(schemaObject);
 
-            await schema.validate(data, {abortEarly: false})
+            await schema.validate(data, {abortEarly: false});
             const parsedData = parseData(data);
             
             await api.post('/Atas', parsedData, {
@@ -270,6 +262,8 @@ export function MinuteForm(){
                 }
             })
             
+            navigate('/');
+
         }catch (err) {
             if (err instanceof Yup.ValidationError) {
               const errorMessages: ErrorsObject = {};

@@ -19,7 +19,7 @@ export function MainPage({children, isHomePage} : MainPageProps ){
         <MyMainPage>
             <header>
                 <div className="content">
-                    <img src={logoImg} alt="Logo"></img>
+                    <img src={logoImg} alt="Logo" onClick={()=>navigate('/')}></img>
                 </div>
             </header>
            <main>
