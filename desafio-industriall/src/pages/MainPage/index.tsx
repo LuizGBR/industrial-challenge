@@ -30,7 +30,7 @@ export function MainPage({children, isHomePage} : MainPageProps ){
                             <p>{subtitle}</p>
                         </div>
                         {isHomePage && (
-                            <button type="button" onClick={() => navigate('/minute')}>
+                            <button type="button" onClick={() => navigate('/minute-form')}>
                                 <AddIcon fontSize="small" />
                             NOVA ATA
                         </button>  

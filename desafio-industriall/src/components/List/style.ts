@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-import {Card as RBCard, ListGroup, ListGroupItem as RBListGroupItem} from 'reactstrap'
+import {Card as RBCard, ListGroupItem as RBListGroupItem} from 'reactstrap'
 
 export const Card = styled(RBCard)`
     min-width:800px;
@@ -29,7 +29,7 @@ export const Card = styled(RBCard)`
 
         p{
             font-weight: 400;
-            font-size: 20px;
+            font-size: 18px;
             color: #5C5958;
         }
 

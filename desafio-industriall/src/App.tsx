@@ -7,22 +7,30 @@ import { MinuteList } from "./components/List";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" 
-          element={
-          <MainPage isHomePage>
-            <MinuteList /> 
-          </MainPage>
-        } />
-        <Route path="/minute"
-          element={
-          <MainPage >
-            <MinuteForm />
-          </MainPage>
-        } />
-      </Routes>
-    </BrowserRouter>
+		<BrowserRouter>
+			<Routes>
+				<Route path="/" 
+					element={
+					<MainPage isHomePage>
+						<MinuteList /> 
+					</MainPage>
+				}/>
+				<Route path="/minute-form"
+					element={
+					<MainPage >
+						<MinuteForm />
+					</MainPage>
+				}>
+					<Route path=":id"
+						element={
+							<MainPage >
+								<MinuteForm />
+							</MainPage>	
+						}
+					/>
+				</Route>
+			</Routes>
+		</BrowserRouter>
     
   );
 }

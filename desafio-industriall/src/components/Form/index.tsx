@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router'
 import api from '../../services/api';
 import { getToken } from '../../services/getToken';
 import {Card, Form} from './style'
@@ -10,6 +10,7 @@ import * as Yup from 'yup'
 import {format} from 'date-fns'
 import { FormHandles } from '@unform/core';
 import { createDateTime } from '../../utils/createDateTime';
+import toast, { Toaster } from 'react-hot-toast';
 
 type FormData = {
     title: string,
@@ -68,6 +69,7 @@ type MinuteProps = {
 export function MinuteForm(){
 
     const navigate = useNavigate();
+    const params = useParams()
     const formRef = useRef<FormHandles>(null);
 
     const [meetingTypeOptions, setMeetingTypeOptions] = useState<MeetingType[]>([]);
@@ -93,6 +95,39 @@ export function MinuteForm(){
         setMeetingTypeOptions(meetingTypesResponse.data)
         setLocalOptions(locationsResponse.data);
 
+    }
+
+    async function getInitialData() {
+        if(params.id){
+
+            const token = await getToken();
+            const response = await api.get(`/Atas/${params.id}`,{
+                headers:{
+                    Authorization: token
+                }
+            })
+
+            console.log(response.data)
+            
+            const initialData: MinuteProps = response.data;
+
+            const {dataInicio, dataFim} = initialData
+
+            const startDate = format(new Date(dataInicio), 'yyyy-MM-dd');
+            const startTime = format(new Date(dataInicio), 'HH:mm');
+
+            const endDate = format(new Date(dataFim), 'yyyy-MM-dd');
+            const endTime = format(new Date(dataFim), 'HH:mm');
+
+            formRef.current?.setData({
+                title: initialData.titulo,
+                startDate: startDate,
+                endDate: endDate,
+                startTime: startTime,
+                endTime: endTime,
+                description: initialData.camposAtaReuniao[0].valor
+            })
+        }
     }
 
     const renderMeetingType = useCallback(()=>{
@@ -255,14 +290,23 @@ export function MinuteForm(){
             await schema.validate(data, {abortEarly: false});
             const parsedData = parseData(data);
             
-            await api.post('/Atas', parsedData, {
+            const response = api.post('/Atas', parsedData, {
                 headers:{
                     Authorization: token,
                     "Content-Type": "application/json"
                 }
             })
-            
-            navigate('/');
+
+            toast.promise(response, {
+                loading: 'Loading ...',
+                success: (data) => {
+                  if (data.status === 500) throw new Error('server error');
+                  
+                  navigate('/');
+                  return 'Ata Criada com Sucesso!';
+                },
+                error: 'Ocorreu um erro!',
+              });
 
         }catch (err) {
             if (err instanceof Yup.ValidationError) {
@@ -282,10 +326,12 @@ export function MinuteForm(){
 
     useEffect(()=>{
         getSelectOptions();
-    },[])
+        getInitialData();
+    }, [])
 
     return(
         <div id="create-minute-form">
+            <Toaster />
             <Card>
                 <Form ref={formRef} onSubmit={handleSubmit}>
                     <>
