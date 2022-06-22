@@ -114,6 +114,8 @@ export function MinuteForm(){
                     Authorization: token
                 }
             })
+
+
        
             const initialData: MinuteProps = response.data;
 
@@ -125,6 +127,20 @@ export function MinuteForm(){
             const endDate = format(new Date(dataFim), 'yyyy-MM-dd');
             const endTime = format(new Date(dataFim), 'HH:mm');
 
+            let sprintEndDate;
+            if(initialData.tipoReuniaoId === 3){
+                if(initialData.camposAtaReuniao[0].valor){
+                    sprintEndDate = format(new Date(initialData.camposAtaReuniao[0].valor), 'yyyy-MM-dd');
+                }
+            }
+
+            let quarterStartDate;
+            if(initialData.tipoReuniaoId === 4){
+                if(initialData.camposAtaReuniao[0].valor){
+                    quarterStartDate = format(new Date(initialData.camposAtaReuniao[0].valor), 'yyyy-MM-dd');
+                }
+            }
+
             formRef.current?.setData({
                 title: initialData.titulo,
                 localId: String(initialData.localId),
@@ -132,52 +148,21 @@ export function MinuteForm(){
                 endDate: endDate,
                 startTime: startTime,
                 endTime: endTime,
-                meetingTypeId: String(initialData.tipoReuniaoId)
+                meetingTypeId: String(initialData.tipoReuniaoId),
+                description: initialData.tipoReuniaoId === 1 ? initialData.camposAtaReuniao[0].valor : '',
+                todayWork: initialData.tipoReuniaoId === 2 ? initialData.camposAtaReuniao[0].valor : '',
+                tomorrowWork: initialData.tipoReuniaoId === 2 ? initialData.camposAtaReuniao[1].valor : '',
+                sprintEndDate: initialData.tipoReuniaoId === 3 ? sprintEndDate : '',
+                sprintReview: initialData.tipoReuniaoId === 3 ? initialData.camposAtaReuniao[1].valor : '',
+                quarterStartDate: initialData.tipoReuniaoId === 4 ? quarterStartDate : '',
+                objective: initialData.tipoReuniaoId === 4 ? initialData.camposAtaReuniao[1].valor : '',
+                keyResults: initialData.tipoReuniaoId === 4 ? initialData.camposAtaReuniao[2].valor : '',
             })
+
 
             setSelectedMeetingType(initialData.tipoReuniaoId);
         }   
     },[params.id]) 
-
-    const renderMeetingType = useCallback(()=>{
-        
-        return(
-            <>
-                {selectedMeetingType === 0 && (
-                    <div className="meeting-content">
-                        Selecione o tipo da reunião
-                    </div>
-                )}
-                {selectedMeetingType === 1 && (
-                    <Textarea name="description" label="Descrição dos Occoridos *"/>    
-                )}
-                {selectedMeetingType === 2 && (
-                    <>
-                        <Textarea name="todayWork" label="O que foi feito hoje? *"/>
-                        <Textarea name="tomorrowWork" label="O que será feito amanhã? *"/>
-                    </>
-                )}
-                {selectedMeetingType === 3 && (
-                    <>
-                        <div className='date-time'>
-                           <Input type="date" name="sprintEndDate" label="Data de Fim da Sprint *" />
-                        </div>
-                        <Textarea name="sprintReview" label="Avaliação do Sprint"/>
-                    </>
-                )}
-                {selectedMeetingType === 4 && (
-                    <>
-                        <div className='date-time'>
-                            <Input type="date" name="quarterStartDate" label="Data de Início do Trimestre *" />
-                        </div>
-                        <Input name="objective" label="Objetivo Principal do Trimestre *"/>
-                        <Textarea name="keyResults" label="Resultados Obtidos Durante os Meses *"/>
-                    </>
-                )}
-                
-            </>
-        )
-    },[selectedMeetingType])
 
     function checkMeetingType1Values(value: any, meetingType: number){
         if(meetingType == 1){
@@ -350,10 +335,10 @@ export function MinuteForm(){
                     <>
                     <h2>Identificação</h2>
                     <div>
-                        <Input name="title" label="Título *" placeholder="Título"/>
+                        <Input disabled={!!params.id} name="title" label="Título *" placeholder="Título"/>
                     </div>
                     <div>
-                        <Select name="localId" label="Local *" placeholder="Local">
+                        <Select disabled={!!params.id} name="localId" label="Local *" placeholder="Local">
                             {localOptions?.map((local) => {
                                 return(
                                     <option key={local.id} value={local.id}>{local.nome}</option>
@@ -363,24 +348,25 @@ export function MinuteForm(){
                     </div>
                     <div className="date-time-inputs">
                         <div>
-                            <Input type="date" name="startDate" label="Data de Início *" />
+                            <Input disabled={!!params.id} type="date" name="startDate" label="Data de Início *" />
                         </div>
                         <div>
-                            <Input type="date" name="endDate" label="Data de Fim *" />
+                            <Input disabled={!!params.id} type="date" name="endDate" label="Data de Fim *" />
                         </div>
                     </div>
                     <div className="date-time-inputs">
                         <div>           
-                            <Input type="time" name="startTime" label="Horário de Início *" />
+                            <Input disabled={!!params.id} type="time" name="startTime" label="Horário de Início *" />
                         </div>
                         <div>
-                            <Input type="time" name="endTime" label="Horário de Fim *" />    
+                            <Input disabled={!!params.id} type="time" name="endTime" label="Horário de Fim *" />    
                         </div>
                     </div>
-                    <div >
+                    <div>
                         <Select 
                             name="meetingTypeId" 
                             label="Tipo da Reunião *"
+                            disabled={!!params.id}
                             onChange={()=> setSelectedMeetingType(Number(formRef.current?.getFieldValue('meetingTypeId')))}
                         >
                             {meetingTypeOptions?.map((meetingType) => {
@@ -391,10 +377,34 @@ export function MinuteForm(){
                         </Select>
                     </div>
                     <h2>Conteúdo da Reunião</h2>                        
-                    {renderMeetingType()}
+                    <div style={selectedMeetingType !==  0? {display: 'none'} : {}} className="meeting-content">
+                        Selecione o tipo da reunião
+                    </div>
+                    <div style={selectedMeetingType !== 1 ? {display: 'none'} : {}}>
+                        <Textarea disabled={!!params.id} name="description" label="Descrição dos Occoridos *"/>        
+                    </div>        
+                    
+                    <div style={selectedMeetingType !== 2 ? {display: 'none'} : {}}>
+                        <Textarea disabled={!!params.id} name="todayWork" label="O que foi feito hoje? *"/>
+                        <Textarea disabled={!!params.id} name="tomorrowWork" label="O que será feito amanhã? *"/>
+                    </div>
+                
+                    <div style={selectedMeetingType !== 3 ? {display: 'none'} : {}}>
+                        <div className='date-time'>
+                           <Input disabled={!!params.id} type="date" name="sprintEndDate" label="Data de Fim da Sprint *" />
+                        </div>
+                        <Textarea disabled={!!params.id} name="sprintReview" label="Avaliação do Sprint"/>
+                    </div>                
+                    <div style={selectedMeetingType !== 4 ? {display: 'none'} : {}}>
+                        <div className='date-time'>
+                            <Input disabled={!!params.id} type="date" name="quarterStartDate" label="Data de Início do Trimestre *" />
+                        </div>
+                        <Input disabled={!!params.id} name="objective" label="Objetivo Principal do Trimestre *"/>
+                        <Textarea disabled={!!params.id} name="keyResults" label="Resultados Obtidos Durante os Meses *"/>
+                    </div>
                     <div className='form-footer'>
-                        <button type="button" className="cancel" onClick={()=>{navigate('/')}}>CANCELAR</button>
-                        <button type="submit" className="save" >SALVAR ATA</button>
+                        <button type="button" className="cancel" onClick={()=>{navigate('/')}}>{params.id ? 'VOLTAR' : 'CANCELAR'}</button>
+                        <button disabled={!!params.id} type="submit" className="save" >SALVAR ATA</button>
                     </div>
                     </>
                 </Form>
