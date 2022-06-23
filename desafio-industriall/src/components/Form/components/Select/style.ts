@@ -34,6 +34,10 @@ export const MySelect = styled.div`
 
     }
 
+    select.disabled{
+            background: #f5f5f5;
+    }
+
     span{
         font-family: 'Calibri', sans-serif;
         font-weight: 400;

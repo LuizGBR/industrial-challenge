@@ -335,10 +335,10 @@ export function MinuteForm(){
                     <>
                     <h2>Identificação</h2>
                     <div>
-                        <Input disabled={!!params.id} name="title" label="Título *" placeholder="Título"/>
+                        <Input className={params.id && 'disabled'} disabled={!!params.id} name="title" label="Título *" placeholder="Título"/>
                     </div>
                     <div>
-                        <Select disabled={!!params.id} name="localId" label="Local *" placeholder="Local">
+                        <Select className={params.id && 'disabled'} disabled={!!params.id} name="localId" label="Local *" placeholder="Local">
                             {localOptions?.map((local) => {
                                 return(
                                     <option key={local.id} value={local.id}>{local.nome}</option>
@@ -348,24 +348,25 @@ export function MinuteForm(){
                     </div>
                     <div className="date-time-inputs">
                         <div>
-                            <Input disabled={!!params.id} type="date" name="startDate" label="Data de Início *" />
+                            <Input className={params.id && 'disabled'} disabled={!!params.id} type="date" name="startDate" label="Data de Início *" />
                         </div>
                         <div>
-                            <Input disabled={!!params.id} type="date" name="endDate" label="Data de Fim *" />
+                            <Input className={params.id && 'disabled'} disabled={!!params.id} type="date" name="endDate" label="Data de Fim *" />
                         </div>
                     </div>
                     <div className="date-time-inputs">
                         <div>           
-                            <Input disabled={!!params.id} type="time" name="startTime" label="Horário de Início *" />
+                            <Input className={params.id && 'disabled'} disabled={!!params.id} type="time" name="startTime" label="Horário de Início *" />
                         </div>
                         <div>
-                            <Input disabled={!!params.id} type="time" name="endTime" label="Horário de Fim *" />    
+                            <Input className={params.id && 'disabled'}disabled={!!params.id} type="time" name="endTime" label="Horário de Fim *" />    
                         </div>
                     </div>
                     <div>
                         <Select 
                             name="meetingTypeId" 
                             label="Tipo da Reunião *"
+                            className={params.id && 'disabled'}
                             disabled={!!params.id}
                             onChange={()=> setSelectedMeetingType(Number(formRef.current?.getFieldValue('meetingTypeId')))}
                         >
@@ -381,30 +382,30 @@ export function MinuteForm(){
                         Selecione o tipo da reunião
                     </div>
                     <div style={selectedMeetingType !== 1 ? {display: 'none'} : {}}>
-                        <Textarea disabled={!!params.id} name="description" label="Descrição dos Occoridos *"/>        
+                        <Textarea className={params.id && 'disabled'} disabled={!!params.id} name="description" label="Descrição dos Occoridos *"/>        
                     </div>        
                     
                     <div style={selectedMeetingType !== 2 ? {display: 'none'} : {}}>
-                        <Textarea disabled={!!params.id} name="todayWork" label="O que foi feito hoje? *"/>
-                        <Textarea disabled={!!params.id} name="tomorrowWork" label="O que será feito amanhã? *"/>
+                        <Textarea className={params.id && 'disabled'} disabled={!!params.id} name="todayWork" label="O que foi feito hoje? *"/>
+                        <Textarea className={params.id && 'disabled'} disabled={!!params.id} name="tomorrowWork" label="O que será feito amanhã? *"/>
                     </div>
                 
                     <div style={selectedMeetingType !== 3 ? {display: 'none'} : {}}>
                         <div className='date-time'>
-                           <Input disabled={!!params.id} type="date" name="sprintEndDate" label="Data de Fim da Sprint *" />
+                           <Input className={params.id && 'disabled'} disabled={!!params.id} type="date" name="sprintEndDate" label="Data de Fim da Sprint *" />
                         </div>
-                        <Textarea disabled={!!params.id} name="sprintReview" label="Avaliação do Sprint"/>
+                        <Textarea className={params.id && 'disabled'} disabled={!!params.id} name="sprintReview" label="Avaliação do Sprint"/>
                     </div>                
                     <div style={selectedMeetingType !== 4 ? {display: 'none'} : {}}>
                         <div className='date-time'>
-                            <Input disabled={!!params.id} type="date" name="quarterStartDate" label="Data de Início do Trimestre *" />
+                            <Input className={params.id && 'disabled'} disabled={!!params.id} type="date" name="quarterStartDate" label="Data de Início do Trimestre *" />
                         </div>
-                        <Input disabled={!!params.id} name="objective" label="Objetivo Principal do Trimestre *"/>
-                        <Textarea disabled={!!params.id} name="keyResults" label="Resultados Obtidos Durante os Meses *"/>
+                        <Input className={params.id && 'disabled'} disabled={!!params.id} name="objective" label="Objetivo Principal do Trimestre *"/>
+                        <Textarea className={params.id && 'disabled'} disabled={!!params.id} name="keyResults" label="Resultados Obtidos Durante os Meses *"/>
                     </div>
                     <div className='form-footer'>
                         <button type="button" className="cancel" onClick={()=>{navigate('/')}}>{params.id ? 'VOLTAR' : 'CANCELAR'}</button>
-                        <button disabled={!!params.id} type="submit" className="save" >SALVAR ATA</button>
+                        <button hidden={!!params.id} disabled={!!params.id} type="submit" className="save" >SALVAR ATA</button>
                     </div>
                     </>
                 </Form>

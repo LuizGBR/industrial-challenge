@@ -25,6 +25,11 @@ export const MyInput = styled.div`
             border: 0 !;       
             outline: 1px solid #4ec1f5; 
         }
+
+    }
+
+    input.disabled{
+            background: #f5f5f5;
     }
 
     span{
