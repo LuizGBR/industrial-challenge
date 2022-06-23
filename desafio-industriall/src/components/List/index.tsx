@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ListGroup} from "reactstrap";
 import api from "../../services/api";
 import { getToken } from "../../services/getToken"
 import { sortByDate } from "../../utils/sortByDate";
-import { Card, ListGroupItem } from "./style";
+import { Card, Empty, ListGroupItem } from "./style";
 import {format} from 'date-fns'
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from 'react-router-dom';
+import { Spinner } from 'theme-ui'
 
 type MinuteBaseData = {
     id: number,
@@ -26,19 +27,29 @@ export function MinuteList(){
     const [sprintRetrospectiveMinutes, setSprintRetrospectiveMinutes] = useState<MinuteBaseData[]>([]);
     const [okrMinutes, setOkrMinutes] = useState<MinuteBaseData[]>([]);
 
+    const [isLoading, setIsLoading] = useState(false);
+
     const shouldRender = resumidaMinutes.length !== 0 || dailyScrumMinutes.length !== 0 || sprintRetrospectiveMinutes.length !== 0 || okrMinutes.length !== 0 
 
-    async function getMinutesList(){
+    const getMinutesList = useCallback(async()=>{
         const token = await getToken();
+        setIsLoading(true);
 
-        const response = await api.get('/Atas',{
-            headers:{
-                Authorization: token,
-            }
-        })
+        try{
+            const response = await api.get('/Atas',{
+                headers:{
+                    Authorization: token,
+                }
+            })
+            setSortedMinutes(response.data);
+        }catch(err){
+            toast.error("Erro ao carregar Ata(s).")
+        }finally{
+            setIsLoading(false);
+        }
 
-        setSortedMinutes(response.data);
-    }
+        
+    },[])
 
     function setSortedMinutes(minutes: MinuteBaseData[]){
         const resumidaMinutes: MinuteBaseData[] = minutes.filter((minute) => {
@@ -104,11 +115,10 @@ export function MinuteList(){
         })
 
         toast.promise(response, {
-            loading: 'Loading ...',
-            success: (data) => {
-              if (data.status === 500) throw new Error('server error');
+            loading: 'Deletando Ata ...',
+            success: () => {
               getMinutesList();
-              return 'Ata deletada!';            
+              return 'Ata deletada com sucesso!';            
             },
             error: 'Ocorreu um erro!',
           });
@@ -116,12 +126,12 @@ export function MinuteList(){
 
     useEffect(()=>{
         getMinutesList();
-    },[])
+    },[getMinutesList])
 
     return(
         <div>
             <Toaster />
-            {shouldRender && (
+            {!isLoading && shouldRender ? (
                 <Card>  
                 {okrMinutes.length !== 0 && (
                     <div className="minute-container">  
@@ -156,6 +166,17 @@ export function MinuteList(){
                     </div>
                 )}
             </Card>
+            ) : (
+                <Empty className="empty"> 
+                    {isLoading ? (
+                        <Spinner />
+                    ):(
+                        <div>
+                            Parece que não há nenhuma Ata por aqui...
+                        </div>
+                    )}
+                    
+                </Empty>
             )}
             
         </div>

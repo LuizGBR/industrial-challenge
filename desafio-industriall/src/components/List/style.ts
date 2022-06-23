@@ -2,6 +2,17 @@ import styled from 'styled-components';
 
 import {Card as RBCard, ListGroupItem as RBListGroupItem} from 'reactstrap'
 
+export const Empty = styled.div`
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 300px;
+        
+        font-size: 16px;
+        font-style: italic;
+        color: #7B7B7B;
+`
+
 export const Card = styled(RBCard)`
     min-width:800px;
     padding: 24px;

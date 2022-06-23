@@ -30,8 +30,6 @@ export const Form = styled(UnForm)`
         font-size: 20px;
         font-weight: 700;
         color: #7B7B7B;
-
-        margin-bottom: 18px;
     }
 
     div{
@@ -51,6 +49,7 @@ export const Form = styled(UnForm)`
         gap: 24px;
 
         div{
+            margin-bottom:0;
             input{
                 max-width: 364px;
             }
@@ -96,7 +95,7 @@ export const Form = styled(UnForm)`
 
     .cancel{
         background: #c0c1c6;
-        color: #5C5958;
+        color: #FFF;
         }
 
     .save{

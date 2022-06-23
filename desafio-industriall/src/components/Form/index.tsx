@@ -31,12 +31,6 @@ type FormData = {
     keyResults: string,
 }
 
-type MeetingField = {
-    id: number,
-    tipo: string,
-    nome: string,
-}
-
 type MeetingType = {
         id: number,
         nome: string,
@@ -109,15 +103,20 @@ export function MinuteForm(){
         if(params.id){
 
             const token = await getToken();
-            const response = await api.get(`/Atas/${params.id}`,{
+            const response = api.get(`/Atas/${params.id}`,{
                 headers:{
                     Authorization: token
                 }
             })
 
-
-       
-            const initialData: MinuteProps = response.data;
+            toast.promise(response, {
+                loading: 'Carregando dados...',
+                success: () => {  
+                  return 'Dados carregados com sucesso!';            
+                },
+                error: 'Ocorreu um erro!',
+              }).then(response =>{
+                const initialData: MinuteProps = response.data;
 
             const {dataInicio, dataFim} = initialData
 
@@ -161,11 +160,12 @@ export function MinuteForm(){
 
 
             setSelectedMeetingType(initialData.tipoReuniaoId);
+              })
         }   
     },[params.id]) 
 
     function checkMeetingType1Values(value: any, meetingType: number){
-        if(meetingType == 1){
+        if(Number(meetingType) === 1){
             if(value && value.trim() !== ''){
                 return true;
             }
@@ -176,7 +176,7 @@ export function MinuteForm(){
     }
 
     function checkMeetingType2Values(value: any, meetingType: number){
-        if(meetingType == 2){
+        if(Number(meetingType) === 2){
             if(value && value.trim() !== ''){
                 return true;
             }
@@ -186,7 +186,7 @@ export function MinuteForm(){
     }
     
     function checkMeetingType3Values(value: any, meetingType: number){
-        if(meetingType == 3){
+        if(Number(meetingType) === 3){
             if(value && value.trim() !== ''){
                 return true;
             }
@@ -196,7 +196,7 @@ export function MinuteForm(){
     }
 
     function checkMeetingType4Values(value: any, meetingType: number){
-        if(meetingType == 4){
+        if(Number(meetingType) === 4){
             if(value && value.trim() !== ''){
                 return true;
             }
@@ -246,25 +246,25 @@ export function MinuteForm(){
         }
 
 
-        if(meetingTypeId == 1){
+        if(Number(meetingTypeId) === 1){
             const extraData = [{campoId: 1, valor: data.description}]
             parsedData.camposAtaReuniao = extraData;
         }
         
         
-        if(meetingTypeId == 2){
+        if(Number(meetingTypeId) === 2){
             const extraData = [{campoId: 2, valor: data.todayWork}, {campoId:3 , valor: data.tomorrowWork}]
             parsedData.camposAtaReuniao = extraData;
         }
     
         
-        if(meetingTypeId == 3){
+        if(Number(meetingTypeId) === 3){
             const parsedSprintEndDate = format(new Date(data.sprintEndDate), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
             const extraData = [{campoId: 4, valor: parsedSprintEndDate}, {campoId:6 , valor: data.sprintReview}]
             parsedData.camposAtaReuniao = extraData;
         }
         
-        if(meetingTypeId == 4){
+        if(Number(meetingTypeId) === 4){
             const extraData = [{campoId: 7, valor: data.quarterStartDate}, {campoId:8 , valor: data.objective}, {campoId:9 , valor: data.keyResults}]
             parsedData.camposAtaReuniao = extraData;
         }
@@ -293,10 +293,8 @@ export function MinuteForm(){
             })
 
             toast.promise(response, {
-                loading: 'Loading ...',
-                success: (data) => {
-                  if (data.status === 500) throw new Error('server error');
-                  
+                loading: 'Criando Ata ...',
+                success: () => {
                   navigate('/');
                   return 'Ata Criada com Sucesso!';
                 },
@@ -332,13 +330,21 @@ export function MinuteForm(){
             <Toaster />
             <Card>
                 <Form ref={formRef} onSubmit={handleSubmit}>
-                    <>
                     <h2>Identificação</h2>
                     <div>
-                        <Input className={params.id && 'disabled'} disabled={!!params.id} name="title" label="Título *" placeholder="Título"/>
+                        <Input 
+                            className={params.id && 'disabled'} 
+                            disabled={!!params.id} name="title" 
+                            label="Título *" 
+                            placeholder="Título..."
+                        />
                     </div>
                     <div>
-                        <Select className={params.id && 'disabled'} disabled={!!params.id} name="localId" label="Local *" placeholder="Local">
+                        <Select 
+                            className={params.id && 'disabled'} 
+                            disabled={!!params.id} name="localId" 
+                            label="Local *" 
+                        >
                             {localOptions?.map((local) => {
                                 return(
                                     <option key={local.id} value={local.id}>{local.nome}</option>
@@ -348,18 +354,41 @@ export function MinuteForm(){
                     </div>
                     <div className="date-time-inputs">
                         <div>
-                            <Input className={params.id && 'disabled'} disabled={!!params.id} type="date" name="startDate" label="Data de Início *" />
+                            <Input 
+                                className={params.id && 'disabled'} 
+                                disabled={!!params.id} type="date" 
+                                name="startDate" 
+                                label="Data de Início *" 
+                            />
                         </div>
                         <div>
-                            <Input className={params.id && 'disabled'} disabled={!!params.id} type="date" name="endDate" label="Data de Fim *" />
+                            <Input 
+                                className={params.id && 'disabled'} 
+                                disabled={!!params.id} 
+                                type="date" 
+                                name="endDate" 
+                                label="Data de Fim *" 
+                            />
                         </div>
                     </div>
                     <div className="date-time-inputs">
                         <div>           
-                            <Input className={params.id && 'disabled'} disabled={!!params.id} type="time" name="startTime" label="Horário de Início *" />
+                            <Input 
+                                className={params.id && 'disabled'} 
+                                disabled={!!params.id} 
+                                type="time" 
+                                name="startTime" 
+                                label="Horário de Início *" 
+                            />
                         </div>
                         <div>
-                            <Input className={params.id && 'disabled'}disabled={!!params.id} type="time" name="endTime" label="Horário de Fim *" />    
+                            <Input 
+                                className={params.id && 'disabled'} 
+                                disabled={!!params.id} 
+                                type="time" 
+                                name="endTime" 
+                                label="Horário de Fim *" 
+                            />    
                         </div>
                     </div>
                     <div>
@@ -382,32 +411,79 @@ export function MinuteForm(){
                         Selecione o tipo da reunião
                     </div>
                     <div style={selectedMeetingType !== 1 ? {display: 'none'} : {}}>
-                        <Textarea className={params.id && 'disabled'} disabled={!!params.id} name="description" label="Descrição dos Occoridos *"/>        
+                        <Textarea 
+                            className={params.id && 'disabled'} 
+                            disabled={!!params.id} 
+                            name="description" 
+                            label="Descrição dos Occoridos *"
+                            placeholder="Descrição..."
+                        />        
                     </div>        
                     
                     <div style={selectedMeetingType !== 2 ? {display: 'none'} : {}}>
-                        <Textarea className={params.id && 'disabled'} disabled={!!params.id} name="todayWork" label="O que foi feito hoje? *"/>
-                        <Textarea className={params.id && 'disabled'} disabled={!!params.id} name="tomorrowWork" label="O que será feito amanhã? *"/>
+                        <Textarea 
+                            className={params.id && 'disabled'} 
+                            disabled={!!params.id} 
+                            name="todayWork" 
+                            label="O que foi feito hoje? *"
+                            placeholder="Trabalho do dia..."
+                        />
+                        <Textarea 
+                            className={params.id && 'disabled'} 
+                            disabled={!!params.id} 
+                            name="tomorrowWork" 
+                            label="O que será feito amanhã? *"
+                            placeholder="Planejamento de amanhã..."
+                        />
                     </div>
                 
                     <div style={selectedMeetingType !== 3 ? {display: 'none'} : {}}>
                         <div className='date-time'>
-                           <Input className={params.id && 'disabled'} disabled={!!params.id} type="date" name="sprintEndDate" label="Data de Fim da Sprint *" />
+                           <Input 
+                                className={params.id && 'disabled'} 
+                                disabled={!!params.id} 
+                                type="date" 
+                                name="sprintEndDate" 
+                                label="Data de Fim da Sprint *" 
+                            />
                         </div>
-                        <Textarea className={params.id && 'disabled'} disabled={!!params.id} name="sprintReview" label="Avaliação do Sprint"/>
+                        <Textarea 
+                            className={params.id && 'disabled'} 
+                            disabled={!!params.id} 
+                            name="sprintReview" 
+                            label="Avaliação do Sprint *" 
+                            placeholder="Avaliação..."
+                        />
                     </div>                
                     <div style={selectedMeetingType !== 4 ? {display: 'none'} : {}}>
                         <div className='date-time'>
-                            <Input className={params.id && 'disabled'} disabled={!!params.id} type="date" name="quarterStartDate" label="Data de Início do Trimestre *" />
+                            <Input 
+                                className={params.id && 'disabled'} 
+                                disabled={!!params.id} 
+                                type="date" 
+                                name="quarterStartDate" 
+                                label="Data de Início do Trimestre *" 
+                            />
                         </div>
-                        <Input className={params.id && 'disabled'} disabled={!!params.id} name="objective" label="Objetivo Principal do Trimestre *"/>
-                        <Textarea className={params.id && 'disabled'} disabled={!!params.id} name="keyResults" label="Resultados Obtidos Durante os Meses *"/>
+                        <Input 
+                            className={params.id && 'disabled'} 
+                            disabled={!!params.id} 
+                            name="objective" 
+                            label="Objetivo Principal do Trimestre *" 
+                            placeholder="Objetivo..."
+                        />
+                        <Textarea 
+                            className={params.id && 'disabled'} 
+                            disabled={!!params.id} 
+                            name="keyResults" 
+                            label="Resultados Obtidos Durante os Meses *" 
+                            placeholder="Resultados..."
+                        />
                     </div>
                     <div className='form-footer'>
                         <button type="button" className="cancel" onClick={()=>{navigate('/')}}>{params.id ? 'VOLTAR' : 'CANCELAR'}</button>
                         <button hidden={!!params.id} disabled={!!params.id} type="submit" className="save" >SALVAR ATA</button>
                     </div>
-                    </>
                 </Form>
             </Card>
         </div>
