@@ -31,9 +31,16 @@ type FormData = {
     keyResults: string,
 }
 
+type FieldType = {
+    id: number,
+    tipo: string,
+    nome: string,
+}
+
 type MeetingType = {
-        id: number,
-        nome: string,
+    id: number,
+    nome: string,
+    campos: FieldType[];
 }
 
 type Local = {
@@ -68,7 +75,7 @@ export function MinuteForm(){
     const [meetingTypeOptions, setMeetingTypeOptions] = useState<MeetingType[]>([]);
     const [localOptions, setLocalOptions] = useState<Local[]>([]);
 
-    const [selectedMeetingType, setSelectedMeetingType] = useState<Number>(0)
+    const [selectedMeetingType, setSelectedMeetingType] = useState<number>(0)
 
     async function getSelectOptions(){
         const token = await getToken();
@@ -88,7 +95,7 @@ export function MinuteForm(){
         const meetingTypes: MeetingType[] = meetingTypesResponse.data;
         const locations: Local[] = locationsResponse.data;
 
-        const meetingTypePlaceholder: MeetingType = {id: 0, nome: "Tipo da Reunião"}
+        const meetingTypePlaceholder: MeetingType = {id: 0, nome: "Tipo da Reunião", campos: [{id:0, nome:"Tipo da Reunião", tipo:"none"}]}
         const localPlaceholder: Local = {id:0, nome: "Local"}
 
         meetingTypes.unshift(meetingTypePlaceholder);
@@ -96,7 +103,7 @@ export function MinuteForm(){
 
         setMeetingTypeOptions(meetingTypes)
         setLocalOptions(locations);
-
+        
     }
 
     const setInitialData = useCallback(async () =>{
@@ -158,52 +165,10 @@ export function MinuteForm(){
                 keyResults: initialData.tipoReuniaoId === 4 ? initialData.camposAtaReuniao[2].valor : '',
             })
 
-
             setSelectedMeetingType(initialData.tipoReuniaoId);
               })
         }   
     },[params.id]) 
-
-    function checkMeetingType1Values(value: any, meetingType: number){
-        if(Number(meetingType) === 1){
-            if(value && value.trim() !== ''){
-                return true;
-            }
-            return false;
-        }
-
-        return true;
-    }
-
-    function checkMeetingType2Values(value: any, meetingType: number){
-        if(Number(meetingType) === 2){
-            if(value && value.trim() !== ''){
-                return true;
-            }
-            return false;
-        }
-        return true;
-    }
-    
-    function checkMeetingType3Values(value: any, meetingType: number){
-        if(Number(meetingType) === 3){
-            if(value && value.trim() !== ''){
-                return true;
-            }
-            return false;
-        }
-        return true;
-    }
-
-    function checkMeetingType4Values(value: any, meetingType: number){
-        if(Number(meetingType) === 4){
-            if(value && value.trim() !== ''){
-                return true;
-            }
-            return false;
-        }
-        return true;
-    }
 
     function getSchema(meetingType: number){
 
@@ -214,23 +179,18 @@ export function MinuteForm(){
             endDate: Yup.string().required("Este campo é obrigatório."),
             startTime: Yup.string().required("Este campo é obrigatório."),
             endTime: Yup.string().required("Este campo é obrigatório."),
-            meetingTypeId: Yup.string().test("is-valid", "Escolha um tipo válido.", meetingType => Number(meetingType) > 0),
-            
-            description: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType1Values(value, meetingType)),
-            todayWork: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType2Values(value, meetingType)),
-            tomorrowWork: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType2Values(value, meetingType)),
-            sprintEndDate: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType3Values(value, meetingType)),
-            sprintReview: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType3Values(value, meetingType)),
-            quarterStartDate: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType4Values(value, meetingType)),
-            objective: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType4Values(value, meetingType)),
-            keyResults: Yup.string().test("is-valid", "Este campo é obrigatório", value => checkMeetingType4Values(value, meetingType)),   
+            meetingTypeId: Yup.string().test("is-valid", "Escolha um tipo válido.", meetingType => Number(meetingType) > 0),   
         }
+
+        meetingTypeOptions.find(mt => mt.id === selectedMeetingType)?.campos.forEach((field)=>{
+            schemaObject[field.nome] = Yup.string().required("Este campo é obrigatório.");
+        })
 
         return schemaObject
     }
 
-    function parseData(data: FormData){
-
+    function parseData(data: any){
+        
         const {startDate, endDate, startTime, endTime, title, localId, meetingTypeId} = data;
 
         const parsedStartDateTime = createDateTime(startDate, startTime);
@@ -245,29 +205,10 @@ export function MinuteForm(){
             camposAtaReuniao: []
         }
 
-
-        if(Number(meetingTypeId) === 1){
-            const extraData = [{campoId: 1, valor: data.description}]
-            parsedData.camposAtaReuniao = extraData;
-        }
-        
-        
-        if(Number(meetingTypeId) === 2){
-            const extraData = [{campoId: 2, valor: data.todayWork}, {campoId:3 , valor: data.tomorrowWork}]
-            parsedData.camposAtaReuniao = extraData;
-        }
-    
-        
-        if(Number(meetingTypeId) === 3){
-            const parsedSprintEndDate = format(new Date(data.sprintEndDate), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-            const extraData = [{campoId: 4, valor: parsedSprintEndDate}, {campoId:6 , valor: data.sprintReview}]
-            parsedData.camposAtaReuniao = extraData;
-        }
-        
-        if(Number(meetingTypeId) === 4){
-            const extraData = [{campoId: 7, valor: data.quarterStartDate}, {campoId:8 , valor: data.objective}, {campoId:9 , valor: data.keyResults}]
-            parsedData.camposAtaReuniao = extraData;
-        }
+        meetingTypeOptions.find(mt => mt.id === selectedMeetingType)?.campos.forEach((field)=>{
+            const extraData = {campoId: field.id, valor: data[field.nome]}
+            parsedData.camposAtaReuniao.push(extraData)
+        })
 
         return parsedData;
     }
@@ -283,6 +224,7 @@ export function MinuteForm(){
             const schema = Yup.object().shape(schemaObject);
 
             await schema.validate(data, {abortEarly: false});
+
             const parsedData = parseData(data);
             
             const response = api.post('/Atas', parsedData, {
@@ -336,7 +278,7 @@ export function MinuteForm(){
                             className={params.id && 'disabled'} 
                             disabled={!!params.id} name="title" 
                             label="Título *" 
-                            placeholder="Título..."
+                            placeholder="Digite aqui..."
                         />
                     </div>
                     <div>
@@ -407,78 +349,59 @@ export function MinuteForm(){
                         </Select>
                     </div>
                     <h2>Conteúdo da Reunião</h2>                        
-                    <div style={selectedMeetingType !==  0? {display: 'none'} : {}} className="meeting-content">
-                        Selecione o tipo da reunião
-                    </div>
-                    <div style={selectedMeetingType !== 1 ? {display: 'none'} : {}}>
-                        <Textarea 
-                            className={params.id && 'disabled'} 
-                            disabled={!!params.id} 
-                            name="description" 
-                            label="Descrição dos Occoridos *"
-                            placeholder="Descrição..."
-                        />        
-                    </div>        
+                    <div>
+                        {
+                            meetingTypeOptions.find(mt => mt.id === selectedMeetingType)?.campos.map((field)=>{
+                                if(field.tipo === "text"){
+                                    return(
+                                        <div  key={field.id}>
+                                            <Input                                          
+                                                className={params.id && 'disabled'} 
+                                                disabled={!!params.id} 
+                                                name={field.nome}
+                                                label={field.nome}
+                                                placeholder="Digite aqui..."
+                                            />
+                                        </div>
+                                    )
+                                }
                     
-                    <div style={selectedMeetingType !== 2 ? {display: 'none'} : {}}>
-                        <Textarea 
-                            className={params.id && 'disabled'} 
-                            disabled={!!params.id} 
-                            name="todayWork" 
-                            label="O que foi feito hoje? *"
-                            placeholder="Trabalho do dia..."
-                        />
-                        <Textarea 
-                            className={params.id && 'disabled'} 
-                            disabled={!!params.id} 
-                            name="tomorrowWork" 
-                            label="O que será feito amanhã? *"
-                            placeholder="Planejamento de amanhã..."
-                        />
-                    </div>
-                
-                    <div style={selectedMeetingType !== 3 ? {display: 'none'} : {}}>
-                        <div className='date-time'>
-                           <Input 
-                                className={params.id && 'disabled'} 
-                                disabled={!!params.id} 
-                                type="date" 
-                                name="sprintEndDate" 
-                                label="Data de Fim da Sprint *" 
-                            />
-                        </div>
-                        <Textarea 
-                            className={params.id && 'disabled'} 
-                            disabled={!!params.id} 
-                            name="sprintReview" 
-                            label="Avaliação do Sprint *" 
-                            placeholder="Avaliação..."
-                        />
-                    </div>                
-                    <div style={selectedMeetingType !== 4 ? {display: 'none'} : {}}>
-                        <div className='date-time'>
-                            <Input 
-                                className={params.id && 'disabled'} 
-                                disabled={!!params.id} 
-                                type="date" 
-                                name="quarterStartDate" 
-                                label="Data de Início do Trimestre *" 
-                            />
-                        </div>
-                        <Input 
-                            className={params.id && 'disabled'} 
-                            disabled={!!params.id} 
-                            name="objective" 
-                            label="Objetivo Principal do Trimestre *" 
-                            placeholder="Objetivo..."
-                        />
-                        <Textarea 
-                            className={params.id && 'disabled'} 
-                            disabled={!!params.id} 
-                            name="keyResults" 
-                            label="Resultados Obtidos Durante os Meses *" 
-                            placeholder="Resultados..."
-                        />
+                                if(field.tipo === "datetime"){
+                                    return(
+                                    <div className='date-time' key={field.id}>
+                                        <Input  
+                                            className={params.id && 'disabled'} 
+                                            disabled={!!params.id} 
+                                            type="date" 
+                                            name={field.nome} 
+                                            label={field.nome}
+                                        />
+                                    </div>                    
+                                    )
+                                }
+                    
+                                if(field.tipo === "textarea"){
+                                    return(
+                                        <div key={field.id}>
+                                            <Textarea
+                                                className={params.id && 'disabled'} 
+                                                disabled={!!params.id} 
+                                                name={field.nome} 
+                                                label={field.nome}
+                                                placeholder="Digite aqui..."
+                                            />
+                                        </div>
+                                    )
+                                }
+
+                                return(
+                                    <div key={field.id} className="meeting-content">
+                                        Selecione o tipo da reunião
+                                    </div>
+                                )
+                            
+                            })
+                        }
                     </div>
                     <div className='form-footer'>
                         <button type="button" className="cancel" onClick={()=>{navigate('/')}}>{params.id ? 'VOLTAR' : 'CANCELAR'}</button>
