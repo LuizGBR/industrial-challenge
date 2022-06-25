@@ -22,7 +22,7 @@ export const MyInput = styled.div`
         }
 
         &:focus{   
-            border: 0 !;       
+            border: 0;       
             outline: 1px solid #4ec1f5; 
         }
 

@@ -20,15 +20,6 @@ type FormData = {
     startTime: string,
     endTime: string,
     meetingTypeId: number,
-    
-    description: string,
-    todayWork: string,
-    tomorrowWork: string,
-    sprintEndDate: string,
-    sprintReview: string,
-    quarterStartDate: string,
-    objective: string,
-    keyResults: string,
 }
 
 type FieldType = {
@@ -48,10 +39,6 @@ type Local = {
     nome: string,
 }
 
-type ErrorsObject = {
-    [key: string]: any 
-}
-
 type MinuteExclusiveProps = {
     campoId: number,
     valor: string | undefined,
@@ -68,6 +55,9 @@ type MinuteProps = {
     camposAtaReuniao: MinuteExclusiveProps[]
 }
 
+type ErrorsObject = {
+    [key: string]: any 
+}
 
 export function MinuteForm(){
 
@@ -358,7 +348,7 @@ export function MinuteForm(){
                                                 className={params.id && 'disabled'} 
                                                 disabled={!!params.id} 
                                                 name={field.nome}
-                                                label={field.nome}
+                                                label={`${field.nome} *`}
                                                 placeholder="Digite aqui..."
                                             />
                                         </div>
@@ -373,12 +363,12 @@ export function MinuteForm(){
                                             disabled={!!params.id} 
                                             type="date" 
                                             name={field.nome} 
-                                            label={field.nome}
+                                            label={`${field.nome} *`}
                                         />
                                     </div>                    
                                     )
                                 }
-                    
+
                                 if(field.tipo === "textarea"){
                                     return(
                                         <div key={field.id}>
@@ -386,7 +376,7 @@ export function MinuteForm(){
                                                 className={params.id && 'disabled'} 
                                                 disabled={!!params.id} 
                                                 name={field.nome} 
-                                                label={field.nome}
+                                                label={`${field.nome} *`}
                                                 placeholder="Digite aqui..."
                                             />
                                         </div>
@@ -398,7 +388,6 @@ export function MinuteForm(){
                                         Selecione o tipo da reunião
                                     </div>
                                 )
-                            
                             })
                         }
                     </div>

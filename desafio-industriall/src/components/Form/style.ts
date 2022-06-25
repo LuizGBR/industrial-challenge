@@ -78,30 +78,32 @@ export const Form = styled(UnForm)`
         display: flex;
         justify-content: flex-end;
         gap: 16px;
+        margin-bottom: 0;
+        margin-top:12px;
 
-    button{
-        font-weight: 700;
-        display: flex;
-        justify-content: center;
-        align-self: center;
-        align-items: center;
+        button{
+            font-weight: 700;
+            display: flex;
+            justify-content: center;
+            align-self: center;
+            align-items: center;
 
-        width: 125px;
-        height: 38px;
-        
-        border-radius: 5px;
-        border: 0;
-    }
-
-    .cancel{
-        background: #c0c1c6;
-        color: #FFF;
+            width: 125px;
+            height: 38px;
+            
+            border-radius: 5px;
+            border: 0;
         }
 
-    .save{
-        background: #44c08a;
-        color: #FFF;
-    }
+        .cancel{
+            background: #c0c1c6;
+            color: #FFF;
+            }
+
+        .save{
+            background: #44c08a;
+            color: #FFF;
         }
+    }
 `
 
