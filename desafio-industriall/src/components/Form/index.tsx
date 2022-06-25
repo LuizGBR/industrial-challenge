@@ -55,6 +55,8 @@ type ErrorsObject = {
 type MinuteExclusiveProps = {
     campoId: number,
     valor: string | undefined,
+    nome?: string,
+    tipo?: string,
 }
 
 type MinuteProps = {
@@ -66,6 +68,7 @@ type MinuteProps = {
     camposAtaReuniao: MinuteExclusiveProps[]
 }
 
+
 export function MinuteForm(){
 
     const navigate = useNavigate();
@@ -76,6 +79,7 @@ export function MinuteForm(){
     const [localOptions, setLocalOptions] = useState<Local[]>([]);
 
     const [selectedMeetingType, setSelectedMeetingType] = useState<number>(0)
+    const [initialData, setInitialData] = useState<MinuteProps>()
 
     async function getSelectOptions(){
         const token = await getToken();
@@ -106,7 +110,7 @@ export function MinuteForm(){
         
     }
 
-    const setInitialData = useCallback(async () =>{
+    const setFormInitialData = useCallback(async () =>{
         if(params.id){
 
             const token = await getToken();
@@ -124,51 +128,40 @@ export function MinuteForm(){
                 error: 'Ocorreu um erro!',
               }).then(response =>{
                 const initialData: MinuteProps = response.data;
+                setInitialData(initialData);
 
-            const {dataInicio, dataFim} = initialData
+                const {dataInicio, dataFim} = initialData
 
-            const startDate = format(new Date(dataInicio), 'yyyy-MM-dd');
-            const startTime = format(new Date(dataInicio), 'HH:mm');
+                const startDate = format(new Date(dataInicio), 'yyyy-MM-dd');
+                const startTime = format(new Date(dataInicio), 'HH:mm');
 
-            const endDate = format(new Date(dataFim), 'yyyy-MM-dd');
-            const endTime = format(new Date(dataFim), 'HH:mm');
+                const endDate = format(new Date(dataFim), 'yyyy-MM-dd');
+                const endTime = format(new Date(dataFim), 'HH:mm');
 
-            let sprintEndDate;
-            if(initialData.tipoReuniaoId === 3){
-                if(initialData.camposAtaReuniao[0].valor){
-                    sprintEndDate = format(new Date(initialData.camposAtaReuniao[0].valor), 'yyyy-MM-dd');
-                }
-            }
+                formRef.current?.setData({
+                    title: initialData.titulo,
+                    localId: String(initialData.localId),
+                    startDate: startDate,
+                    endDate: endDate,
+                    startTime: startTime,
+                    endTime: endTime,
+                    meetingTypeId: String(initialData.tipoReuniaoId),
+                })
 
-            let quarterStartDate;
-            if(initialData.tipoReuniaoId === 4){
-                if(initialData.camposAtaReuniao[0].valor){
-                    quarterStartDate = format(new Date(initialData.camposAtaReuniao[0].valor), 'yyyy-MM-dd');
-                }
-            }
-
-            formRef.current?.setData({
-                title: initialData.titulo,
-                localId: String(initialData.localId),
-                startDate: startDate,
-                endDate: endDate,
-                startTime: startTime,
-                endTime: endTime,
-                meetingTypeId: String(initialData.tipoReuniaoId),
-                description: initialData.tipoReuniaoId === 1 ? initialData.camposAtaReuniao[0].valor : '',
-                todayWork: initialData.tipoReuniaoId === 2 ? initialData.camposAtaReuniao[0].valor : '',
-                tomorrowWork: initialData.tipoReuniaoId === 2 ? initialData.camposAtaReuniao[1].valor : '',
-                sprintEndDate: initialData.tipoReuniaoId === 3 ? sprintEndDate : '',
-                sprintReview: initialData.tipoReuniaoId === 3 ? initialData.camposAtaReuniao[1].valor : '',
-                quarterStartDate: initialData.tipoReuniaoId === 4 ? quarterStartDate : '',
-                objective: initialData.tipoReuniaoId === 4 ? initialData.camposAtaReuniao[1].valor : '',
-                keyResults: initialData.tipoReuniaoId === 4 ? initialData.camposAtaReuniao[2].valor : '',
+                setSelectedMeetingType(initialData.tipoReuniaoId);
             })
-
-            setSelectedMeetingType(initialData.tipoReuniaoId);
-              })
         }   
     },[params.id]) 
+
+    const setExtraInitialData = useCallback(()=>{
+        
+        initialData?.camposAtaReuniao.forEach((field)=>{
+            if(field.nome){
+                formRef.current?.setFieldValue(`${field.nome}`, field.valor)
+            }   
+        })
+        
+    },[initialData?.camposAtaReuniao])
 
     function getSchema(meetingType: number){
 
@@ -262,10 +255,16 @@ export function MinuteForm(){
     useEffect(()=>{
         getSelectOptions();
         if(meetingTypeOptions.length !== 0 && localOptions.length !== 0){
-            setInitialData();
+            setFormInitialData();
         }
         
-    }, [setInitialData, localOptions.length, meetingTypeOptions.length])
+    }, [localOptions.length, meetingTypeOptions.length, setFormInitialData])
+
+    useEffect(()=>{
+        if(params.id){
+            setExtraInitialData();
+        }
+    },[params.id, setExtraInitialData])
 
     return(
         <div id="create-minute-form">
